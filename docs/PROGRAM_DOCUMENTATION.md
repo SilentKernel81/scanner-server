@@ -2184,11 +2184,11 @@ A phone downloading the index meanwhile: see *What happens when the index change
 
 ## The card dropper
 
-**Since 2026-10-22: the station's code, and a mechanism designed but never printed or run** (`station/dropper.py`,
-`station/station_client.py`; plan: `docs/plans/PRODUCT_PLAN.md`, phase 5; the mechanism: `hardware/dropper/` - six
+**Since 2026-10-22: the station's code, and a mechanism designed, its first parts printed, never run** (`station/dropper.py`,
+`station/station_client.py`; plan: `docs/plans/PRODUCT_PLAN.md`, phase 5; the mechanism: `SilentKernel81/card-dropper`, a project of its own since 2026-10-30 - six
 silicone-tyred wheels under the stack, two axles driven by servos through one-way bearings, roll the bottom card out
 under an adjustable gate; a Raspberry Pi Pico turns each pulse into one card's feed, and keeps a pulse that comes during
-a feed for right after it - and `docs/plans/CARD_DROPPER_MECHANISM_PLAN.md`). A station can release the next card itself by pulsing one GPIO pin of its
+a feed for right after it - its plan is in that repository). A station can release the next card itself by pulsing one GPIO pin of its
 Raspberry Pi; what the pin drives (a servo's driver, a relay, a solenoid's transistor) is the mechanism's business - one
 pulse means one card. Off unless switched on for a camera (Settings > Cameras > This camera > Card dropper).
 

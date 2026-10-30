@@ -240,10 +240,10 @@ gets it by merge).
   - try it on commons and on sleeved cards first (a sleeve takes the wear), look at faces, edges and corners after
     many passes, and keep valuable and foil cards out until that is measured.
   **The station's side is written** (2026-10-22: `station/dropper.py`, Settings > Cameras > Card dropper; PROGRAM_DOCUMENTATION,
-  *The card dropper*) and tested with a stand-in pin. **The mechanism is designed** (2026-10-22/23: `hardware/dropper/`,
-  `docs/plans/CARD_DROPPER_MECHANISM_PLAN.md` - wheels with silicone tyres under the stack, two of three axles driven by
+  *The card dropper*) and tested with a stand-in pin. **The mechanism is designed** (2026-10-22/23; since 2026-10-30 its own repository,
+  `SilentKernel81/card-dropper` - wheels with silicone tyres under the stack, two of three axles driven by
   servos through one-way bearings, an adjustable gate, both card sizes; a first design with a pusher was dropped) and
-  checked in CAD only. Never tried: a print, a real pin, a card released.
+  checked in CAD; its first parts printed 2026-10-29/30. Never tried: an assembled feeder, a real pin, a card released.
 - The ESP32-with-a-scale station stays a plan until phase 5 has a box to put it under.
 
 ## 5. Left out on purpose

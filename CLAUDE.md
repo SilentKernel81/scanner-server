@@ -106,15 +106,15 @@ Imports are written out in full (`from card_scanner.core import inventory`,
 `from card_scanner.config import Config`). The OCR reader (Node.js) is beside the package,
 in `src/ocr/`. The top folder has two Python files, the launchers `app.py` (server) and
 `station.py` (a station), plus `config.yaml`, `.env` and the data (`data/`, `scanned_cards/`,
-`station_captures/`). `hardware/` holds what is printed and flashed, not run by either program
-(the card dropper's CAD and its Pico firmware). `scripts/setup_database.py` and `scripts/cleanup.py` start the two tools.
+`station_captures/`). The card dropper's mechanism (its CAD and Pico firmware) is a project of its own since
+2026-10-30, `SilentKernel81/card-dropper` (private for now): only the station's pulse is here. `scripts/setup_database.py` and `scripts/cleanup.py` start the two tools.
 
 **More of this map, and the rules that go with it, lie beside the code** - each loaded when working
 under its folder: [`src/card_scanner/station/CLAUDE.md`](src/card_scanner/station/CLAUDE.md) (the camera station: capture,
 detection, focus, its setup page, the dropper's station side), [`src/card_scanner/core/CLAUDE.md`](src/card_scanner/core/CLAUDE.md)
 (reading a card: OCR, the AI, the picture index and printing check, the decision, the foil marker; prices),
 [`src/card_scanner/server/CLAUDE.md`](src/card_scanner/server/CLAUDE.md) (the pages and the web UI's rules; the picture index
-download), [`hardware/CLAUDE.md`](hardware/CLAUDE.md) (the card dropper's mechanism). Read the one for the code you touch
+download). Read the one for the code you touch
 even when working from elsewhere.
 
 | Area | Code |

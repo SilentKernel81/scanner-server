@@ -156,12 +156,13 @@ game sits behind one interface (`games/`), so another could be added.
   card itself - once the server has each capture (and it was not a card back), after Add / Skip with auto-add off, the first
   card when scanning starts; one pulse per card, never more, and none while the server is away. Settings > Cameras > Card dropper, with a "Drop one card" test. Tested with a stand-in pin; never with a
   real pin or mechanism.
-- **The card dropper's mechanism** (2026-10-22/23, design only: `hardware/dropper/`): a 3D-printed feeder for sleeved
+- **The card dropper's mechanism** (2026-10-22/23; since 2026-10-30 a project of its own, `SilentKernel81/card-dropper`): a 3D-printed feeder for sleeved
   and unsleeved cards - six silicone-tyred wheels under the stack (two of the three axles driven by servos through
   one-way bearings) roll only the bottom card out under an adjustable gate; it slides on its back into a tray under a
   camera arm. A Raspberry Pi Pico turns the station's pulse into one card's feed. Also as FreeCAD and STEP files.
-  Checked for collisions and a card's path in CAD, the controller on a simulated Pico; never printed, never run, no
-  card fed - card damage is to be tested first (`docs/plans/CARD_DROPPER_MECHANISM_PLAN.md`).
+  Checked for collisions and a card's path in CAD, the controller on a simulated Pico; its first parts printed
+  (2026-10-29/30), never assembled, never run, no card fed - card damage is to be tested first (its plan, in that
+  repository).
 - **Automatic updates** (since 2026-10-22, off by default): Settings > Card data can download the card data again every day, 3 days,
   week or month, and go back to the pictures the picture index still lacks (a build Scryfall refused, one stopped) every
   6 hours, day or week - while the program runs; a computer that was off catches up when it starts. Never the index's
