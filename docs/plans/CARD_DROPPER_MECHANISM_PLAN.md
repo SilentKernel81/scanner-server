@@ -123,7 +123,7 @@ All fit a 256 x 256 bed. `part = "..."` in the .scad, or the STEP file of the sa
 |---|---|---|---|---|
 | `bearing_test` | 1 | 90 x 21 x 30 | upright, as in the file | **before the block**: three pieces of its side wall, the 608's pocket at 22.05 / 22.20 / 22.35 mm (written on top), printed standing as the block is, so the pockets' tops are the same overhang. The size that takes a bearing by hand pressure and holds it still becomes `bearing_fit` |
 | `wheel_block` | 1 | 150 x 90 x 86 | upright | walls only, open at the bottom; the bearing housings are ribs from the table up, no overhang |
-| `wheel_plate` | 1 | 150 x 92 x 5 | flat, rails up | ironing on; PTFE tape on the rails |
+| `wheel_plate` | 1 | 150 x 92 x 5 | flat, rails up | ironing on; the rails bare (the owner's choice, 2026-10-30: ironed rails first, PTFE tape only if the tests ask for it - see "Jams and failures") |
 | `wheel` | 6 | Ø 48 x 15 | flat, boss up | an O-ring on each |
 | `clutch_hub` | 2 | Ø 30 x 19 | on the horn's face | the servo horn's arms **trimmed to 26 mm** tip to tip first |
 | `servo_bracket` | 1 | 93 x 44 x 41 | on its mounting plate | holds both servos |
@@ -152,7 +152,7 @@ All fit a 256 x 256 bed. `part = "..."` in the .scad, or the STEP file of the sa
 - 2 servo extension cables, 50 cm (the servos are on the feeder, the Pico on the camera post);
 - for a Raspberry Pi Camera Module: the 200 mm ribbon that comes with it reaches (camera -> arm -> down the post to
   the Pi: ~150 mm) - for a Pi 5, the 22-pin-to-15-pin "standard-mini" one, also 200 mm;
-- PTFE tape (0.1 mm, self-adhesive), self-adhesive felt, soft feet, feeler gauges.
+- PTFE tape (0.1 mm, self-adhesive) for the gate's edge - and the plate's rails, if bare ones fail (below); self-adhesive felt, soft feet, feeler gauges.
 
 ## Electronics and the controller
 
@@ -224,7 +224,7 @@ How a servo drives its axle, step by step, drawn from the .scad: `hardware/dropp
 2. Slide the rods through the bearings, threading the wheels on inside the block (axle 2's at ±12 mm, the others' at
    ±24 mm from the centre line); O-rings on the wheels; tighten the grub screws on the filed flats. Each axle must turn
    freely by hand.
-3. Plate on the block (6 x M3 self-tapping), PTFE tape on its rails; chute and landing base on the block's front wall
+3. Plate on the block (6 x M3 self-tapping), its rails bare (ironed); chute and landing base on the block's front wall
    (2 x M3 + nuts each, reached from below); tray in the base, post in its socket, arm on the post.
 4. Servos into the bracket **from inside** - the body goes out through the window, the tabs rest on the bracket's inner
    face (2 x M2 each). **Each hub onto its rod, horn facing out, BEFORE the bracket goes on**: with the bracket on,
@@ -283,7 +283,9 @@ was not.
 - **A card that does not come out** (a miss, or one stopped short under card 2) is never captured: the station
   releases nothing more and the page shows why it waits - the feeding stops, nothing breaks. "Drop one card" tries
   again.
-- **If the finish by gravity is not reliable**, in this order, each measured before the next: a longer `TRAVEL_MM` for
+- **If the finish by gravity is not reliable**, in this order, each measured before the next: PTFE tape (0.1 mm) on
+  the plate's rails, which are bare at first (2026-10-30) - the card slides on them on its own weight, and an ironed
+  print is still rougher than PTFE; it also answers marks the rails leave on the backs (damage test 2); a longer `TRAVEL_MM` for
   axle 3 by a millimetre at a time, watching card 2's back for marks; a shorter table (`table_end`); a light hinged
   flap resting on the card past the gate (gravity only, rolling or PTFE-faced - it touches the face); an infra-red
   sensor past the gate so axle 3 stops on the card's back edge rather than on a count.
