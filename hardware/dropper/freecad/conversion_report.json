@@ -9,8 +9,20 @@
   "wheel_plate": {
    "valid": true,
    "solids": 1,
-   "faces": 84,
-   "volume": 31073.5
+   "faces": 85,
+   "volume": 28643.5
+  },
+  "rail_left": {
+   "valid": true,
+   "solids": 1,
+   "faces": 7,
+   "volume": 293.1
+  },
+  "rail_right": {
+   "valid": true,
+   "solids": 1,
+   "faces": 7,
+   "volume": 293.1
   },
   "servo_bracket": {
    "valid": true,
@@ -87,14 +99,14 @@
   "magazine_sleeved": {
    "valid": true,
    "solids": 1,
-   "faces": 25,
-   "volume": 48103.3
+   "faces": 33,
+   "volume": 48891.5
   },
   "magazine_unsleeved": {
    "valid": true,
    "solids": 1,
-   "faces": 25,
-   "volume": 75975.6
+   "faces": 35,
+   "volume": 77115.8
   },
   "gate": {
    "valid": true,
@@ -191,20 +203,26 @@
   "magazine_sleeved": {
    "valid": true,
    "solids": 1,
-   "faces": 25,
-   "volume": 48103.3
+   "faces": 33,
+   "volume": 48891.5
   },
   "magazine_unsleeved": {
    "valid": true,
    "solids": 1,
-   "faces": 25,
-   "volume": 75975.6
+   "faces": 35,
+   "volume": 77115.8
   },
   "pi_mount": {
    "valid": true,
    "solids": 1,
    "faces": 79,
    "volume": 33054.9
+  },
+  "rail": {
+   "valid": true,
+   "solids": 1,
+   "faces": 7,
+   "volume": 293.1
   },
   "servo_bracket": {
    "valid": true,
@@ -233,8 +251,8 @@
   "wheel_plate": {
    "valid": true,
    "solids": 1,
-   "faces": 84,
-   "volume": 31073.5
+   "faces": 85,
+   "volume": 28643.5
   }
  }
 }

@@ -24,7 +24,7 @@
 // Use: open in OpenSCAD, choose `part` (Customizer), F6, export STL. Or from a shell:
 //   openscad -D 'part="wheel"' -o wheel.stl card_dropper.scad
 
-part = "assembly"; // [assembly, bearing_test, wheel_block, wheel_plate, wheel, clutch_hub, servo_bracket, magazine_sleeved, magazine_unsleeved, gate, chute, tray, landing_base, camera_post, camera_arm, pi_mount]
+part = "assembly"; // [assembly, bearing_test, wheel_block, wheel_plate, rail, wheel, clutch_hub, servo_bracket, magazine_sleeved, magazine_unsleeved, gate, chute, tray, landing_base, camera_post, camera_arm, pi_mount]
 
 /* [Cards - measure yours with calipers] */
 sleeved_l = 92;        // a sleeved card's length (standard sleeves: 91-92)
@@ -39,8 +39,18 @@ card_clear = 2;        // the magazine is this much longer and wider than the ca
 // wheel_d moves the plate, the magazines, the gate and the chute - never the block or the bracket.
 axle_z = 90 - 51.4 / 2;   // 64.3: the axles' height in the block, above the table
 block_top = 86;        // the block's walls end here, the plate lies on them (measured on the print: 86)
-rail_w = 4;            // the table's two rails (past the gate)
-rail_h = 1;            // how far they stand above the plate
+rail_w = 4;            // the table's two rails (past the gate): bars of their own, in grooves in the plate
+rail_h = 1;            // how far the card plane is above the plate
+rail_drop = 0.2;       // the rails' tops this much UNDER the card plane (and a rail 2.0 mm tall: whole 0.2 layers): a rail above the wheels lifts a card
+                       // off axle 3's wheels; one a little under them only lets it droop (sand a bar's
+                       // underside to lower it, a strip of tape under it to raise it - never its top)
+rail_groove = 1.2;     // the rails' grooves in the plate: this deep ...
+rail_fit = 0.6;        // ... and this much wider than a rail (0.3 a side: the first layer's squish narrows
+                       // the groove's mouth and widens the rail's top, both on the bed)
+skirt_d = 1;           // the magazine's side walls (and the outer 3 mm of its rear wall) go on down this far,
+                       // into a channel in the plate: that locates the magazine
+skirt_fit = 0.3;       // the channel's room round them, a side (the squish again)
+rear_lip = 3;          // the rear wall's lip: its outer 3 mm (the sleeved magazine's whole rear wall)
 mag_wall = 3;          // the sleeved magazine's walls (the unsleeved one's are thicker inside)
 mag_h = 46;            // the magazine's height above the plate: ~45 mm of cards
 window_h = 1.5;        // the front wall's bottom edge above the card plane (the gate closes the rest)
@@ -312,31 +322,93 @@ module wheel_block() {
     }
 }
 
+// The rails' y, and where a rail's 45 degree ramp starts and ends: the rails begin under the front
+// wall (they pass under the gate's blade), rising from the plate to their top at the front inner face.
+rails_y = [-10, 10];
+rail_top = rail_z - rail_drop;
+rail_x0 = gate_x;                                // the ramp's top end
+rail_xs = rail_x0 - (rail_top - plate_top);      // the ramp's foot, on the plate
+
+// One rail (2 of them), in place on y = 0: a bar standing in its groove, its top just under the card
+// plane, a 45 degree ramp at its start. Print it on its top - the face the card slides on comes out as
+// smooth as the bed.
+module rail() rotate([90, 0, 0]) linear_extrude(rail_w, center = true)
+    polygon([[rail_xs, plate_top - rail_groove], [table_end, plate_top - rail_groove], [table_end, rail_top],
+             [rail_x0, rail_top], [rail_xs, plate_top]]);
+module placed_rail(s) translate([0, rails_y[(s + 1) / 2], 0]) rail();   // s = -1, 1
+
+// The magazine's lip, seen from above, grown by c: each side wall's whole thickness (the unsleeved one's
+// is thicker inside - a lip of only its outer part would leave the rest hanging 1 mm over the bed) and
+// the gate's guides, and the rear wall's outer 3 mm (as thick as the sleeved one's: the unsleeved one's
+// rear wall reaches over axle 1's wheels, which its lip would meet). The side lips' two ends hold the
+// magazine along x, their outer faces across. A gap at x = 62 for the plate's two countersunk screws
+// there (their heads reach |y| = 36.2): a 9 mm bridge in the print.
+skirt_gaps = [62];
+module skirt_outline(sleeved, c) {
+    wi = ((sleeved ? sleeved_w : unsleeved_w) + card_clear) / 2;      // the side walls' inner face
+    gy = gate_half_w + 0.3;                                             // the gate's guides' inner face
+    difference() {
+        union() {
+            for (s = [-1, 1]) {
+                translate([mag_x0 - c, s > 0 ? wi - c : -mag_y - c]) square([mag_x1 - mag_x0 + 2 * c, mag_y - wi + 2 * c]);
+                translate([mag_x1 - c, s > 0 ? gy - c : -mag_y - c]) square([gate_t + 2 + 2 * c, mag_y - gy + 2 * c]);
+            }
+            translate([mag_x0 - c, -mag_y - c]) square([rear_lip + 2 * c, 2 * (mag_y + c)]);
+        }
+        for (x = skirt_gaps) translate([x - 4.5 + c, -100]) square([9 - 2 * c, 200]);
+    }
+}
+// The plate's channel: both magazines' lips with room round them, and room under the unsleeved one's
+// thicker rear wall too (it overhangs its lip by 4 mm in the print: if it droops, it droops into this).
+// Drawn as three pieces that do not touch - the rear U and the two front pieces past the gap at x = 62 -
+// each one polygon extruded on its own: FreeCAD's importer fails on unions of several 2D shapes, and
+// drops a polygon of several outlines. h: how deep.
+module skirt_channel(h) {
+    f = skirt_fit;
+    x0 = mag_x0 - f;                                         // the rear lip's outer face
+    xr = gate_x - unsleeved_l - card_clear + f;              // the unsleeved rear wall's inner face
+    xs = mag_x1 + f;                                         // the side walls' front ...
+    xg = mag_x1 + gate_t + 2 + f;                            // ... and the gate's guides' front
+    yo = mag_y + f;                                          // the outer faces
+    yi = (unsleeved_w + card_clear) / 2 - f;                 // the unsleeved side walls' inner faces
+    yg = gate_half_w + 0.3 - f;                              // the guides' inner faces
+    g0 = skirt_gaps[0] - 4.5 + f;                            // the gap
+    g1 = skirt_gaps[0] + 4.5 - f;
+    pts = [[x0, -yo], [g0, -yo], [g0, -yi], [xr, -yi], [xr, yi], [g0, yi], [g0, yo], [x0, yo],          // 0-7
+           [g1, -yo], [xg, -yo], [xg, -yg], [xs, -yg], [xs, -yi], [g1, -yi],                             // 8-13
+           [g1, yi], [xs, yi], [xs, yg], [xg, yg], [xg, yo], [g1, yo]];                                  // 14-19
+    for (path = [[0, 1, 2, 3, 4, 5, 6, 7], [8, 9, 10, 11, 12, 13], [14, 15, 16, 17, 18, 19]])
+        linear_extrude(h) polygon([for (i = path) pts[i]]);
+}
+
 // The plate on the block: under the stack it lies 1 mm below the wheel tops (a safety floor - the
-// cards lie on the wheels), with a slot for each wheel; from the gate on, two rails carry the card
-// to the table's end. The magazine stands on it between locators. Print flat, rails up.
+// cards lie on the wheels), with a slot for each wheel; from the gate on, two rails (parts of their
+// own, in grooves) carry the card to the table's end. The magazine's lip drops into a channel in it.
+// Print it FACE DOWN on a smooth bed: the face the cards pass over comes out as smooth as the bed,
+// and everything on that face is cut into it (the grooves, the channel, the screws' countersinks), so
+// nothing needs support. Its six M3 screws are COUNTERSUNK, flush: a pan head stood ~2 mm above the
+// plate, where the cards pass 1 mm above it.
 module wheel_plate() {
     x0 = block_x0;
     x1 = table_end;
-    rail_x0 = gate_x;                            // the rails begin under the front wall (they pass under the
-                                                 // gate's blade), each with a 45 degree ramp up from the plate
     difference() {
-        union() {
-            translate([x0, -plate_half_w, block_top]) cube([x1 - x0, 2 * plate_half_w, plate_t]);
-            for (s = [-1, 1]) translate([0, s * 10, 0]) rotate([90, 0, 0]) linear_extrude(rail_w, center = true)
-                polygon([[rail_x0 - rail_h, plate_top - eps], [x1, plate_top - eps], [x1, rail_z], [rail_x0, rail_z]]);
-            // locators: the magazine drops between them (both magazines have the same outside)
-            for (s = [-1, 1]) for (x = [10, 80])
-                translate([x, s > 0 ? mag_y + 0.3 : -mag_y - 1.8, plate_top - eps]) cube([8, 1.5, 2]);
-            for (s = [-1, 1])
-                translate([mag_x0 - 1.8, s > 0 ? 20 : -mag_y, plate_top - eps]) cube([1.5, mag_y - 20, 2]);
-        }
+        translate([x0, -plate_half_w, block_top]) cube([x1 - x0, 2 * plate_half_w, plate_t]);
+        // the rails' grooves: open at the table's end, closed just before the ramp's foot
+        for (y = rails_y) translate([rail_xs - rail_fit, y - (rail_w + rail_fit) / 2, plate_top - rail_groove])
+            cube([x1 - rail_xs + rail_fit + 1, rail_w + rail_fit, rail_groove + 1]);
+        // the magazine's channel: 0.2 mm of room round its lip, 0.2 mm deeper than it
+        // as deep as the lip is long: the magazine stands on its lip all round, not on the two pads at x = 62 alone
+        translate([0, 0, plate_top - skirt_d]) skirt_channel(skirt_d + 1);
         for (i = [0 : 2]) for (s = [-1, 1]) {
             translate([axle_x[i] - slot_half_l, s * axle_wheel_y[i] - wheel_w / 2 - 1, block_top - 1]) cube([2 * slot_half_l, wheel_w + 2, plate_t + 3]);
             // the slot's far edge chamfered: a card drooping into it slides out of it, never against an edge
             translate([axle_x[i] + slot_half_l, s * axle_wheel_y[i], plate_top]) rotate([0, 45, 0]) cube([2, wheel_w + 2, 2], center = true);
         }
-        for (b = block_bosses) translate([b[0], b[1], block_top - 1]) cylinder(d = 3.4, h = plate_t + 2);
+        for (b = block_bosses) translate([b[0], b[1], 0]) {
+            translate([0, 0, block_top - 1]) cylinder(d = 3.4, h = plate_t + 2);
+            // the countersink: a flat-head M3 (90 degrees, head 6 mm) sits flush with the plate's face
+            translate([0, 0, plate_top - 1.5]) cylinder(d1 = 3.4, d2 = 6.4, h = 1.5 + eps);
+        }
     }
 }
 
@@ -379,6 +451,9 @@ module magazine(sleeved = true) {
     difference() {
         union() {
             translate([mag_x0, -mag_y, z0]) cube([mag_x1 - mag_x0, 2 * mag_y, mag_h]);
+            // the lip under the walls, into the plate's channel (the side walls carried on down whole,
+            // so they print without support; see skirt_outline for the rear wall)
+            translate([0, 0, z0 - skirt_d]) linear_extrude(skirt_d + eps) skirt_outline(sleeved, 0);
             // the gate's guides: two strips on the front face, outside the magazine's inside width
             // (a sleeved card lying against a side wall reaches |y| = 34.5 and must pass them), with
             // lips over the gate's edges that stop above the card's way out
@@ -600,6 +675,7 @@ module card(l, w, x, z, c = "white") {
 // Everything in place. `at` = how far card 1 has gone (mm), to see it on its way.
 module assembly(at = 40) {
     color("SteelBlue") wheel_plate();
+    color("White") for (s = [-1, 1]) placed_rail(s);
     color("LightSteelBlue", 0.5) wheel_block();
     color("SlateGray") servo_bracket();
     for (i = [0 : 2]) {
@@ -626,12 +702,13 @@ module assembly(at = 40) {
 module printable() {
     if (part == "bearing_test") bearing_test();
     else if (part == "wheel_block") translate([-block_x0, block_half_w, 0]) wheel_block();
-    else if (part == "wheel_plate") translate([-block_x0, plate_half_w, -block_top]) wheel_plate();
+    else if (part == "wheel_plate") translate([-block_x0, plate_half_w, plate_top]) rotate([180, 0, 0]) wheel_plate();   // face down
+    else if (part == "rail") translate([-rail_xs, rail_w / 2, rail_top]) rotate([180, 0, 0]) rail();                  // on its top
     else if (part == "wheel") wheel();
     else if (part == "clutch_hub") clutch_hub();
     else if (part == "servo_bracket") rotate([90, 0, 0]) translate([0, -servo_tab_face + bracket_t, -axle_z]) servo_bracket();
-    else if (part == "magazine_sleeved") translate([-mag_x0, mag_y, -plate_top]) magazine(true);
-    else if (part == "magazine_unsleeved") translate([-mag_x0, mag_y, -plate_top]) magazine(false);
+    else if (part == "magazine_sleeved") translate([-mag_x0, mag_y, skirt_d - plate_top]) magazine(true);
+    else if (part == "magazine_unsleeved") translate([-mag_x0, mag_y, skirt_d - plate_top]) magazine(false);
     else if (part == "gate") rotate([0, -90, 0]) translate([-mag_x1, 0, -rail_z]) gate(0);
     else if (part == "chute") translate([0, 0, (tray_in_w + 1) / 2 + 2]) rotate([90, 0, 0]) translate([-table_end, 0, 0]) chute();
     else if (part == "tray") translate([-tray_x0, 0, -base_t]) tray();

@@ -22,6 +22,8 @@ osc=$(command -v openscad) || { echo "OpenSCAD is not installed (the openscad pa
 cat > "$work/manifest.txt" <<'EOF'
 wheel_block|wheel_block();|wheel_block
 wheel_plate|wheel_plate();|wheel_plate
+rail_left|placed_rail(-1);|rail
+rail_right|placed_rail(1);|rail
 servo_bracket|servo_bracket();|servo_bracket
 wheel_axle1_left|placed_wheel(0, -1);|wheel
 wheel_axle1_right|placed_wheel(0, 1);|wheel

@@ -21,8 +21,8 @@ test it for card damage before trusting it with valuable cards:
 | `card_dropper.scad` | Every printed part, parametric (OpenSCAD 2021.01 or newer). Card, servo, O-ring and camera sizes are parameters at the top: measure yours first. |
 | `firmware/main.py` | MicroPython for a Raspberry Pi Pico: turns the station's pulse into one card's feed by the two servos. A pulse that comes during a feed is kept and carried out next; `tests/test_dropper_firmware.py` runs it on a simulated Pico. |
 | `freecad/card_dropper.FCStd` | The same parts in FreeCAD (1.x), each a solid of its own, in its place (the unsleeved magazine set beside the other). Made from the .scad - see below. |
-| `stl/*.stl` | The 14 parts to print, as STL for a slicer, each lying as it is printed (exported by the loop below; checked: closed meshes, on the bed, the same volumes as the STEP files). Print six `wheel` and two `clutch_hub`. |
-| `freecad/step/*.step` | The same 14 parts as STEP, for any CAD program or slicer. |
+| `stl/*.stl` | The 15 parts to print (and `bearing_test`, a coupon), as STL for a slicer, each lying as it is printed (exported by the loop below; checked: closed meshes, on the bed, the same volumes as the STEP files). Print six `wheel`, two `clutch_hub` and two `rail`; the `wheel_plate` face down on a smooth bed. |
+| `freecad/step/*.step` | The same 15 parts as STEP, for any CAD program or slicer. |
 | `assembly/dropper_drive_assembly.png` | How a servo drives its 8 mm axle, in assembly order (six steps and the drive cut along its axle, labelled), rendered from the .scad. |
 | `assembly/make_sheet.sh` | Draws it again: OpenSCAD exports each step's parts (`drive.scad`), Blender renders them (`render_steps.py`), Pillow lays out the sheet (`compose.py`, which holds its texts). Run it after a change to the .scad. |
 | `freecad/to_freecad.sh` | Makes the two above from `card_dropper.scad` (OpenSCAD + `freecadcmd`); `conversion_report.json` is its check (one valid solid per object, the volumes). |
@@ -43,13 +43,14 @@ Exporting the parts as STL:
 
 ```bash
 # OpenSCAD 2021.01 or newer, the distribution's package (openscad)
-for p in wheel_block wheel_plate wheel clutch_hub servo_bracket magazine_sleeved magazine_unsleeved \
+for p in bearing_test wheel_block wheel_plate rail wheel clutch_hub servo_bracket magazine_sleeved magazine_unsleeved \
          gate chute tray landing_base camera_post camera_arm pi_mount; do
   openscad -D "part=\"$p\"" -o "stl/$p.stl" card_dropper.scad
 done
 ```
 
-Print six `wheel` and two `clutch_hub`. Before the `wheel_block`, print `bearing_test` (`stl/bearing_test.stl`,
+Print six `wheel`, two `clutch_hub` and two `rail`. The `wheel_plate` and the rails lie face down in their files:
+print them so on a smooth bed - the face the cards slide over comes out as smooth as the bed. Before the `wheel_block`, print `bearing_test` (`stl/bearing_test.stl`,
 90 x 21 x 30, standing as in the file): three pieces of its side wall with the 608's pocket at 22.05,
 22.20 and 22.35 mm, the size written on top. The pocket that takes a bearing by hand pressure and holds it still is
 `bearing_fit` for the block - set it, then export the block. `part = "assembly"` shows everything in place, a card on

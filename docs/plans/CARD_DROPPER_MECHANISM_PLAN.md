@@ -80,7 +80,7 @@ is a row of this table.
 | A tyre of axle 3 if it overshoots | card 2's back, near its front edge | the stack's weight | **yes - the case to avoid** | why axle 3's travel errs short; the stop cannot be exact without a sensor |
 | The plate, 1 mm under the tyres | its back, only if it sags | - | - | a floor, not a support; the wheel slots' far edges are chamfered |
 | The gate's lower edge | the SECOND card's leading edge | the drag passed up | it rests against it | Rounded (r 1 mm) and lined with PTFE tape. A few cards can creep forward 3 mm under the front wall to it (the window is 1.5 mm high). |
-| The table's rails, then the chute | its back | its own weight (1.8 g) | yes | the rails begin with a 45° ramp under the front wall; the chute's ribs start 0.5 mm under the card plane - no edge in the way |
+| The table's rails, then the chute | its back | its own weight (1.8 g) | yes | the rails (bars of their own, printed on their tops: bed-smooth) begin with a 45° ramp under the front wall, their tops 0.2 mm under the card plane; the chute's ribs start 0.5 mm under the card plane - no edge in the way |
 | The end of the table | its back | its own weight | it pivots | a tail of a few mm may lift against card 2's front edge as it tips |
 | The tray / the pile | its back on the previous card's face | its own weight, landing | yes, a few cm | The fall: up to the tray's depth (45 mm) for the first cards; at 30° the leading EDGE meets the floor first, not a corner. Like a toss by hand - but **never measured**. |
 | The tray's far wall | its leading edge | its speed (~0.5 m/s, estimate) | stops it | 1-2 mm felt on that wall. Never measured. |
@@ -111,7 +111,9 @@ owner's cards: with the magazine on the plate, lay a gauge of the wanted gap (st
 unsleeved, 0.8-0.9 mm sleeved) across the rails under the gate, turn the gate's screw (M3, from the top of the
 magazine: 0.5 mm a turn) until the gate rests on it, pull the gauge out, lock with the nut on top.
 
-The rule it keeps: **one card < gate gap < two cards**.
+The rule it keeps: **one card < gate gap < two cards**. (The rails stand 0.2 mm under the card plane since
+2026-10-30: a gauge laid on them sets the gate 0.2 mm lower than over the wheels, so the card sees a gap 0.2 mm
+narrower than the gauge - take a gauge 0.2 mm thicker.)
 
 **Then by test**, one card at a time with "Drop one card" (Settings > Cameras): two cards out -> a smaller gap;
 nothing out -> a larger gap (the card stops at the gate), or the tyres slip (see "Jams and failures"). Write the
@@ -125,11 +127,12 @@ All fit a 256 x 256 bed. `part = "..."` in the .scad, or the STEP file of the sa
 |---|---|---|---|---|
 | `bearing_test` | 1 | 90 x 21 x 30 | upright, as in the file | **before the block**: three pieces of its side wall, the 608's pocket at 22.05 / 22.20 / 22.35 mm (written on top), printed standing as the block is, so the pockets' tops are the same overhang. The size that takes a bearing by hand pressure and holds it still becomes `bearing_fit` |
 | `wheel_block` | 1 | 150 x 90 x 86 | upright | walls only, open at the bottom; the bearing housings are ribs from the table up, no overhang |
-| `wheel_plate` | 1 | 150 x 92 x 4.5 (2.55 under the rails; 5 / 3 for the 51.4 mm wheel) | flat, rails up | ironing on; the rails bare (the owner's choice, 2026-10-30: ironed rails first, PTFE tape only if the tests ask for it - see "Jams and failures") |
+| `wheel_plate` | 1 | 150 x 92 x 2.55 | **face down on a smooth bed** (as in the file) | the face the cards pass over is the bed's side; grooves for the rails, a channel for the magazine's lip and countersinks for its six screws are cut into it, so nothing needs support (2026-10-30, the owner's idea) |
+| `rail` | 2 | 36.8 x 4 x 2.0 | on its top (as in the file) | the card slides on the bed-smooth face; pressed into its groove, open end at the table's end. Too high: sand its UNDERSIDE; too low: tape under it - never touch its top |
 | `wheel` | 6 | Ø 48 x 15 | flat, boss up | an O-ring on each |
 | `clutch_hub` | 2 | Ø 35 x 19.5 | on the horn's face | for the horn **uncut** (31.3 mm, measured 2026-10-30); the servo bracket's first leg is notched for its width |
 | `servo_bracket` | 1 | 93 x 44 x 41 | on its mounting plate | holds both servos |
-| `magazine_sleeved`, `magazine_unsleeved` | 1 each | 108 x 75 x 46 | upright | the gate's guides and screw ledge are part of it; the gate goes in from below. The front wall's bottom edge is a 69 mm bridge 2.5 mm over the bed: support under it, or file it straight |
+| `magazine_sleeved`, `magazine_unsleeved` | 1 each | 108 x 75 x 46 | upright | the gate's guides and screw ledge are part of it; the gate goes in from below. Its side walls (whole) and the outer 3 mm of its rear wall go on 1 mm down, a lip into the plate's channel that locates it (it replaced the plate's locators); the unsleeved one's thicker rear wall overhangs that lip by 4 mm, 1 mm over the bed - over the channel, so a droop does no harm.  The front wall's bottom edge is a 69 mm bridge 2.5 mm over the bed: support under it, or file it straight |
 | `gate` | 1 | 70 x 36 x 6 | on its back | round off its lower back edge if the print left a lip; PTFE tape on it |
 | `chute` | 1 | 77 x 53 x 42 | on its side | |
 | `tray` | 1 | 110 x 93 x 55 | upright | light, **matte** colour - see "The camera and the detector" |
@@ -148,7 +151,7 @@ All fit a 256 x 256 bed. `part = "..."` in the .scad, or the STEP file of the sa
 - a Raspberry Pi Pico (or Pico W); a 5 V supply of 2 A or more for the servos (not the Pi's 5 V pin: two stalling
   servos draw ~1.4 A and their spikes reach the Pi); a 470-1000 µF capacitor across the servos' supply; a 1 kΩ and two
   330 Ω resistors;
-- 6 M3 grub screws (M3 x 6) and nuts; 4 M2 x 6 self-tapping screws for the horns; M3 screws (plate 6, bracket 6, chute 2, base 2, Pi mount 1) and nuts; one M4 bolt and nut
+- 6 M3 grub screws (M3 x 6) and nuts; 4 M2 x 6 self-tapping screws for the horns; 6 countersunk (flat-head) M3 x 8 for the plate - flush: a pan head would stand where the cards pass; M3 screws (bracket 6, chute 2, base 2, Pi mount 1) and nuts; one M4 bolt and nut
   for the camera arm; 4 M2.5 x 8 screws for the Pi, 4 M2 x 6 for the Pico (both self-tapping into the mount's
   standoffs);
 - 2 servo extension cables, 50 cm (the servos are on the feeder, the Pico on the camera post);
@@ -226,7 +229,8 @@ How a servo drives its axle, step by step, drawn from the .scad: `hardware/dropp
 2. Slide the rods through the bearings, threading the wheels on inside the block (axle 2's at ±12 mm, the others' at
    ±24 mm from the centre line); O-rings on the wheels; tighten the grub screws on the filed flats. Each axle must turn
    freely by hand.
-3. Plate on the block (6 x M3 self-tapping), its rails bare (ironed); chute and landing base on the block's front wall
+3. Plate on the block (6 x countersunk M3, flush), the two rails pressed into its grooves; lay a card on wheel 3
+   and the rails together: it must touch the wheel (sand a rail's underside if it does not); chute and landing base on the block's front wall
    (2 x M3 + nuts each, reached from below); tray in the base, post in its socket, arm on the post.
 4. Servos into the bracket **from inside** - the body goes out through the window, the tabs rest on the bracket's inner
    face (2 x M2 each). **Each hub onto its rod, horn facing out, BEFORE the bracket goes on**: with the bracket on,
@@ -286,8 +290,9 @@ was not.
   releases nothing more and the page shows why it waits - the feeding stops, nothing breaks. "Drop one card" tries
   again.
 - **If the finish by gravity is not reliable**, in this order, each measured before the next: PTFE tape (0.1 mm) on
-  the plate's rails, which are bare at first (2026-10-30) - the card slides on them on its own weight, and an ironed
-  print is still rougher than PTFE; it also answers marks the rails leave on the backs (damage test 2); a longer `TRAVEL_MM` for
+  the rails' tops, bare at first (2026-10-30: printed on their tops, as smooth as the bed) - the card slides on them
+  on its own weight; it also answers marks the rails leave on the backs (damage test 2) - and a rail with tape on it
+  is 0.1 mm higher: sand its underside to match; a longer `TRAVEL_MM` for
   axle 3 by a millimetre at a time, watching card 2's back for marks; a shorter table (`table_end`); a light hinged
   flap resting on the card past the gate (gravity only, rolling or PTFE-faced - it touches the face); an infra-red
   sensor past the gate so axle 3 stops on the card's back edge rather than on a count.
@@ -350,6 +355,22 @@ its rod, and 0.5 mm all round is clear of the bracket - the same check on the ol
 the hub and the bracket changed. The pocket is ONE polygon (`horn_outline`): FreeCAD's importer failed on a circle
 and the arms together once their outlines crossed. The second hub: not printed yet; the bracket still has the
 servo's body, tabs and shaft height as typical values, not measured.
+
+**2026-10-30: the plate is printed face down, the rails are parts of their own** (the owner's idea: a smooth bed
+gives the face the cards pass over). Everything on that face is now cut into it: the rails stand in 1.2 mm grooves
+(their tops 0.2 mm UNDER the card plane, 2.0 mm bars: whole 0.2 mm layers - a rail above the wheels is what lifted the card off wheel 3; sanding a
+rail's underside or taping under it sets it without touching its top), the magazine's locators became a lip under
+its walls in a channel of the plate (the side walls whole - the unsleeved magazine's are thicker inside, and a lip of
+their outer part alone would have left the rest hanging over the bed - the rear wall's outer 3 mm; a gap at x = 62;
+as deep as the lip is long, so the magazine stands on it all round), and the six screws are countersunk flush.
+Room for the first layer's squish: 0.3 mm a side in the grooves and the channel. The channel is three pieces each
+extruded alone: FreeCAD's importer failed on a union of rectangles and dropped a polygon of several outlines. **Found on the way: the plate's pan-head screws stood ~2 mm above the plate where
+the cards pass 1 mm above it** (at x = 62 and 125, under a sleeved card's edge) - the card-path check never drew the
+screws. Checked in OpenSCAD: rails, magazines, gate, wheels, rings and rods meet nothing but what they rest on; a
+card of either size at the card plane, 0 to 44 mm out, meets neither the plate, the rails, the magazine nor a flush
+screw head (and the same card 0.2 mm lower does hit the rails - the check can fail); the rails' ends only touch the
+chute. Changed: the plate, the two
+magazines, the new rail; every other part exported the same. Not printed yet.
 
 **Never**: the other parts printed, the one-way bearings tried, assembled, calibrated, run on
 a Pico, driven by the station, fed a card - so the grip, the slip, the stop's accuracy, the finish by gravity, the
