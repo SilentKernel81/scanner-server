@@ -27,9 +27,9 @@ STEPS = {
         "toward the block, and shows the way it GRIPS: it must grip when the wheels push the card forward. "
         "Check by hand: hold a piece of rod in it - it turns freely one way and locks the other."),
     2: ('Screw the horn into the hub',
-        "Trim the servo horn's two arms to 26 mm tip to tip. Lay it in the pocket on the hub's other face and drive "
-        "two small horn screws through its holes into the hub. Leave out the horn's centre screw: once the hub is on, "
-        "nothing can reach it."),
+        "Open the servo horn's hole 10 mm from its centre to 2 mm, on both arms. Lay the horn, uncut, in the pocket on "
+        "the hub's other face and drive two M2 x 6 self-tapping screws through those holes into the hub. Leave out the "
+        "horn's centre screw: once the hub is on, nothing can reach it."),
     3: ('Bearings, rod and wheels in the block',
         "Press the two 608 ball bearings into the block's walls, from outside. Slide the 8 mm rod through them, "
         "threading both wheels on inside the block. Tighten the grub screws on flats filed on the rod. "

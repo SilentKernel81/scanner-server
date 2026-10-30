@@ -30,19 +30,19 @@ module hf0812(y) {
 module b608(y, n) it(str("bearing", n)) along_y(y) tube(bearing_od, rod_d, bearing_w);
 module rod(y0) it("rod") along_y(y0) cylinder(d = rod_d, h = rod_length(2));
 
-module horn(y) it("horn") along_y(y) difference() {                 // the double arm, trimmed to 26 mm
-    a = hub_horn_len / 2 - horn_tip_w / 2;
+module horn(y) it("horn") along_y(y) difference() {                 // the double arm, uncut
+    a = horn_len / 2 - horn_tip_w / 2;
     union() {
         cylinder(d = horn_hub_d, h = horn_t);
         for (s = [-1, 1]) translate([s * a, 0, 0]) cylinder(d = horn_tip_w, h = horn_t);
-        linear_extrude(horn_t) polygon([[-a, -horn_tip_w / 2], [0, -horn_hub_d / 2], [a, -horn_tip_w / 2], [a, horn_tip_w / 2], [0, horn_hub_d / 2], [-a, horn_tip_w / 2]]);
+        linear_extrude(horn_t) polygon([[-a, -horn_tip_w / 2], [0, -horn_root_w / 2], [a, -horn_tip_w / 2], [a, horn_tip_w / 2], [0, horn_root_w / 2], [-a, horn_tip_w / 2]]);
     }
     translate([0, 0, -3]) cylinder(d = 4.8, h = 10);                 // the spline's hole
-    for (s = [-1, 1]) translate([s * (hub_horn_len / 2 - 4), 0, -1]) cylinder(d = 1.2, h = 5);
+    for (s = [-1, 1]) translate([s * horn_screw_r, 0, -1]) cylinder(d = 2, h = 5);   // the hole opened for a screw
 }
 
 module small_screws(y) it("screws_horn") for (s = [-1, 1])          // the horn's two small screws, going in along +y
-    translate([X + s * (hub_horn_len / 2 - 4), y, Z]) rotate([-90, 0, 0]) { cylinder(d = 3.2, h = 1); cylinder(d = 1.6, h = 7); }
+    translate([X + s * horn_screw_r, y, Z]) rotate([-90, 0, 0]) { cylinder(d = 3.8, h = 1); cylinder(d = 2, h = 7); }
 
 module servo(dy = 0) translate([0, dy, 0]) {        // an MG90S: tabs on the bracket's face, shaft on the axle
     y1 = servo_tab_face;

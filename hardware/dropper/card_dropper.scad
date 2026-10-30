@@ -34,7 +34,11 @@ unsleeved_w = 63;
 card_clear = 2;        // the magazine is this much longer and wider than the card
 
 /* [Feeder] */
-rail_z = 90;           // the card plane: the wheels' tops and the table's rails, above the table
+// The printed wheel block fixes these two (2026-10-29): it was drawn for a 51.4 mm wheel under a card
+// plane at 90 mm. The card plane now follows the wheels as measured (rail_z, below), so a change of
+// wheel_d moves the plate, the magazines, the gate and the chute - never the block or the bracket.
+axle_z = 90 - 51.4 / 2;   // 64.3: the axles' height in the block, above the table
+block_top = 86;        // the block's walls end here, the plate lies on them (measured on the print: 86)
 rail_w = 4;            // the table's two rails (past the gate)
 rail_h = 1;            // how far they stand above the plate
 mag_wall = 3;          // the sleeved magazine's walls (the unsleeved one's are thicker inside)
@@ -48,8 +52,9 @@ plate_half_w = 46;     // the plate on the wheel block
 ring_id = 44;          // the tyre: a silicone O-ring 50 x 44 x 3 mm (uxcell, 10 pack)
 ring_cs = 3;           // its thickness
 groove_d = 45.5;       // the groove's bottom: the ring stretched ~3% so it stays put
-wheel_d = 51.4;        // the wheel with its ring on: groove + 2 x the stretched ring (~2.95) - MEASURE
-                       // (only mm per degree in the firmware depends on it: all six wheels are alike)
+wheel_d = 50.5;        // the wheel with its ring on, MEASURED on the printed wheels (2026-10-30; drawn as
+                       // 51.4: the groove + 2 x a ring stretched ~3%). It sets the card plane (rail_z) and
+                       // mm per degree in the firmware (MM_PER_DEG): all six wheels are alike
 wheel_w = 8;           // a wheel's width: flange, groove, flange
 flange_d = 48;         // the flanges stay under the ring: only silicone touches a card
 wheel_boss_d = 22;     // the boss of the grub screw: ~2 mm of wall around its nut on every side (at 16 mm,
@@ -70,8 +75,8 @@ block_half_w = 40;     // ... and this wide (outer), side walls 4 mm
 clutch_od = 12;        // HF0812 one-way bearing (drawn cup roller clutch): 8 bore, 12 OD, 12 long
 clutch_l = 12;
 clutch_fit = 11.95;    // its bore in the printed hub: a press fit - TO TUNE on your printer
-hub_d = 30;            // the clutch hub: as wide as fits between the servo bracket's legs ...
-hub_horn_len = 26;     // ... so the horn's arms are TRIMMED to 26 mm tip to tip
+hub_d = 35;            // the clutch hub: wide enough for the horn uncut (~1.5 mm of wall past its tips); the
+                       // servo bracket's first leg is notched for it (it was 30, for a horn trimmed to 26 mm)
 
 /* [Servo (MG90S) - measure yours] */
 servo_body_l = 22.8;
@@ -80,9 +85,14 @@ servo_shaft_offset = 5.5;   // from the body's centre to the shaft, along the bo
 servo_hole_spacing = 27.8;  // between the two mounting holes
 servo_tab_t = 2.5;
 shaft_above_tab = 11;       // from the top of the mounting tabs to the top of the output spline
-horn_hub_d = 7.5;           // the double-arm horn that comes with it
-horn_tip_w = 4.2;
-horn_t = 1.6;
+// the double-arm horn that comes with it, MEASURED on the owner's MG90S (2026-10-30):
+horn_len = 31.28;           // tip to tip - used uncut
+horn_hub_d = 6.7;           // the round centre
+horn_root_w = 5.03;         // an arm's width next to the centre ...
+horn_tip_w = 4.0;           // ... and at its tip
+horn_t = 2.09;              // its thickness
+horn_screw_r = 10;          // the hole each of the hub's two screws goes through: the horn's holes are ~1 mm
+                            // (for pushrods), 4, 6, 8 ... mm from the centre - this one is opened to 2 mm
 
 /* [Pi mount: the station's Raspberry Pi and the servos' Pico, on the camera post] */
 pi_holes = [58, 49];   // Raspberry Pi 4 and 5 alike: board 85 x 56, M2.5 holes 3.5 mm in from the edges
@@ -107,12 +117,13 @@ eps = 0.01;
 // ---------------------------------------------------------------------------------------
 // Values worked out from the parameters
 // ---------------------------------------------------------------------------------------
+rail_z = axle_z + wheel_d / 2;                   // 89.55: the card plane - the wheels' tops and the table's rails
 gate_x = sleeved_l + card_clear;                 // 94: the magazine's front inner face
 mag_in_w = sleeved_w + card_clear;               // 69
 mag_y = mag_in_w / 2 + mag_wall;                 // 37.5: the magazine's outer half-width
 mag_x0 = -mag_wall;                              // -3
 mag_x1 = gate_x + mag_wall;                      // 97
-plate_top = rail_z - rail_h;                     // 89: the plate's top, the magazine stands here
+plate_top = rail_z - rail_h;                     // 88.55: the plate's top, the magazine stands here
 gate_gap_nominal = 0.6;                          // only for the assembly view: set it with a gauge
 gate_t = 6;
 gate_half_w = mag_in_w / 2 + 0.5;                // 35: the gate is wider than the sleeved magazine's inside
@@ -140,10 +151,11 @@ base_x1 = pm_x0 + pm_t + pi_stand + 1.6 + pi_height + 2;   // where the landing 
 pi_holes_yz = [for (bx = [3.5, 3.5 + pi_holes[0]]) for (by = [3.5, 3.5 + pi_holes[1]]) [pi_board[0] / 2 - bx, pi_z1 - by]];
 pico_holes_yz = [for (dy = [-1, 1]) for (bz = [4.8, 4.8 + pico_holes[1]]) [dy * pico_holes[0] / 2, pico_z0 + bz]];
 
-axle_z = rail_z - wheel_d / 2;                   // all axles at one height: the wheel tops make the card plane
-plate_t = 3;                                     // the plate under the stack, 1 mm under the wheel tops
-block_top = plate_top - plate_t;                 // the block's walls end here, the plate lies on them
+plate_t = plate_top - block_top;                 // 2.55: the plate under the stack, 1 mm under the wheel tops
+                                                 // (3 with the 51.4 mm wheel it was drawn for)
 block_wall = 4;
+chute_bolt_z = 80;                               // the chute's two bolts through the block's front wall: in the
+                                                 // printed block, so fixed (10 mm under the card plane drawn)
 housing_t = bearing_w + 2;                       // the side walls are this thick where a bearing sits:
 housing_out = housing_t - block_wall;            // its pocket from outside, a 2 mm lip inside
 horn_recess = horn_t + 0.4;                      // the horn's pocket in a clutch hub
@@ -211,20 +223,30 @@ module wheel() {
 module clutch_hub() {
     difference() {
         cylinder(d = hub_d, h = hub_l);
-        // the horn (its arms trimmed to hub_horn_len), in a pocket on one face
-        translate([0, 0, -eps]) {
-            a = hub_horn_len / 2 - horn_tip_w / 2;
-            rt = (horn_tip_w + 0.4) / 2;
-            rh = (horn_hub_d + 0.4) / 2;
-            cylinder(r = rh, h = horn_recess);
-            for (s = [-1, 1]) translate([s * a, 0, 0]) cylinder(r = rt, h = horn_recess);
-            linear_extrude(horn_recess) polygon([[-a, -rt], [0, -rh], [a, -rt], [a, rt], [0, rh], [-a, rt]]);   // the tapered arms
-        }
+        // the horn, uncut, in a pocket on one face (its outline: horn_outline, 0.2 mm of room all round)
+        translate([0, 0, -eps]) linear_extrude(horn_recess) polygon(horn_outline(0.2));
         translate([0, 0, horn_recess - eps]) cylinder(d = 5.5, h = 3);       // the horn screw's head
-        for (s = [-1, 1]) translate([s * (hub_horn_len / 2 - 4), 0, -1]) cylinder(d = 1.8, h = horn_recess + 6);   // into the horn's holes
+        for (s = [-1, 1]) translate([s * horn_screw_r, 0, -1]) cylinder(d = 1.8, h = horn_recess + 6);   // M2 self-tapping, through the horn's holes
         translate([0, 0, hub_l - clutch_l]) cylinder(d = clutch_fit, h = clutch_l + 1);   // the one-way bearing
     }
 }
+
+// The servo horn seen from above, grown by c all round, as ONE polygon: the two arms, tapering from
+// their root to square ends (a round tip and a square one both fit), joined by the arcs of the round
+// centre where it stands out past them. One polygon and not a circle and a polygon together:
+// FreeCAD's importer fails on the union of the two when their outlines cross ("Null input shape").
+function horn_outline(c) = let(
+    L = horn_len / 2 + c,                  // the tips
+    rt = horn_tip_w / 2 + c,               // half an arm at its tip ...
+    rr = horn_root_w / 2 + c,              // ... and at its root (the centre line of the horn)
+    rh = horn_hub_d / 2 + c,               // the round centre
+    k = (rr - rt) / L,                     // how fast an arm narrows: its edge is y = rr - k |x|
+    // where an arm's edge meets the round centre: x^2 + (rr - k x)^2 = rh^2
+    x0 = (rr * k + sqrt(pow(rr * k, 2) - (1 + k * k) * (rr * rr - rh * rh))) / (1 + k * k),
+    a0 = atan2(rr - k * x0, x0),           // ... at this angle
+    n = 12,                                // points on each arc
+    arc = function(f, t) [for (i = [0 : n]) rh * [cos(f + (t - f) * i / n), sin(f + (t - f) * i / n)]]
+) concat([[-L, -rt]], arc(180 + a0, 360 - a0), [[L, -rt], [L, rt]], arc(a0, 180 - a0), [[-L, rt]]);
 
 // What is cut out of a side wall for one 608 bearing, along +z: z = 0 is the wall's inner face,
 // z = housing_t its outer face. The pocket goes in from outside, bearing_w deep; the 2 mm left
@@ -285,7 +307,7 @@ module wheel_block() {
         for (x = bracket_legs) for (z = [axle_z - 14, axle_z + 14])
             translate([x, -block_half_w - 1, z]) rotate([-90, 0, 0]) cylinder(d = 3.4, h = w + 2);
         // the chute and the landing base bolt to the front wall (M3 + nut, reached from below)
-        for (y = [-25, 25]) translate([x1 - 4, y, rail_z - 10]) rotate([0, 90, 0]) cylinder(d = 3.4, h = 6);
+        for (y = [-25, 25]) translate([x1 - 4, y, chute_bolt_z]) rotate([0, 90, 0]) cylinder(d = 3.4, h = 6);
         for (y = [-15, 15]) translate([x1 - 4, y, 14]) rotate([0, 90, 0]) cylinder(d = 3.4, h = 6);
     }
 }
@@ -339,6 +361,9 @@ module servo_bracket() {
         }
         for (x = bracket_legs) for (z = [axle_z - 14, axle_z + 14])
             translate([x, -block_half_w - 15, z]) rotate([-90, 0, 0]) cylinder(d = 2.8, h = 16);
+        // room for the hubs to turn, 1 mm all round: only the first leg reaches into it (axle 2's hub), and
+        // only around the axle's height - its screws, 14 mm above and below, stay whole
+        for (x = xs) translate([x, hub_y0 - 1, axle_z]) rotate([-90, 0, 0]) cylinder(r = hub_d / 2 + 1, h = hub_l + 2);
     }
 }
 
@@ -419,7 +444,7 @@ module chute() {
                          [table_end + u * cos(chute_deg) - 2.5 * sin(chute_deg), z0 - u * sin(chute_deg) - 2.5 * cos(chute_deg)],
                          [table_end, z0 - 1]]);
         }
-        for (y = [-25, 25]) translate([table_end - 1, y, rail_z - 10]) rotate([0, 90, 0]) cylinder(d = 3.4, h = 5);
+        for (y = [-25, 25]) translate([table_end - 1, y, chute_bolt_z]) rotate([0, 90, 0]) cylinder(d = 3.4, h = 5);
     }
 }
 

@@ -42,7 +42,8 @@ A first design pushed the bottom card out with a servo-driven sled and a rack (2
 ```
 
 - The cards lie **face up** in a magazine without a floor, on **six wheels, two per axle** (a left and a right one:
-  the card runs straight). Their tyres are the O-rings, stretched ~3% into a 45.5 mm groove: a wheel of ~51.4 mm.
+  the card runs straight). Their tyres are the O-rings, stretched ~3% into a 45.5 mm groove: a wheel of ~51.4 mm as drawn - **50.5 mm as printed** (measured 2026-10-30;
+  the card plane follows it, see "What was checked").
   **The tops of the six tyres are the card's plane**; a plate 1 mm below is only a floor.
 - **Every axle is an 8 mm steel rod turning in two 608-2RS bearings**, pressed into housings on the block's side
   walls. The wheels are fixed to the rods with M3 grub screws.
@@ -91,9 +92,10 @@ is a row of this table.
 | Cards | sleeved 92 x 67 mm, unsleeved 88 x 63 mm; thickness ~0.30 mm unsleeved, ~0.6 mm sleeved | **to measure** with calipers on the owner's cards and sleeves; all are parameters at the top of the .scad |
 | Magazine inside | 94 x 69 (sleeved), 90 x 65 (unsleeved), 45 mm of cards | card + 2 mm; two magazines with the same outside and the same front inner face |
 | Capacity of one load | ~150 unsleeved, ~75 sleeved | 45 mm / thickness - **to measure**; the tray is as deep, so one load fills one tray |
-| Wheel | Ø 51.4 mm with its ring (groove 45.5) - **to measure** | ring 44 ID stretched 3.4%, its 3 mm section thinning to ~2.95 |
-| Card per degree of wheel | 0.449 mm | π x 51.4 / 360; calibrated in the firmware (`MM_PER_DEG`) against a ruler |
-| Axle 3's travel | 86 mm sleeved, 82 unsleeved: 2 strokes of ~96° / ~91° | card 1's back edge passes axle 3 (x = 95) after 90 mm (a sleeved card at the gate) to 93 (one that stopped at the front wall); 4 mm short of the nearest - **short rather than long**: short is a missed card, long is a wheel turning under card 2 |
+| Wheel | Ø **50.5 mm with its ring, measured** on the printed wheels (2026-10-30) | drawn as 51.4: ring 44 ID stretched 3.4% into a 45.5 groove, its 3 mm section thinning to ~2.95 |
+| Card plane | 89.55 mm above the table | the axles at 64.3 (the printed block) + half the wheel; 90 as first drawn |
+| Card per degree of wheel | 0.441 mm | π x 50.5 / 360 (`MM_PER_DEG`); to calibrate against a ruler on the rig |
+| Axle 3's travel | 86 mm sleeved, 82 unsleeved: 2 strokes of ~98° / ~93° | card 1's back edge passes axle 3 (x = 95) after 90 mm (a sleeved card at the gate) to 93 (one that stopped at the front wall); 4 mm short of the nearest - **short rather than long**: short is a missed card, long is a wheel turning under card 2 |
 | Axle 2's travel | 30 mm, the first stroke only | its back edge reaches x = 50 after 41-48 mm |
 | Table end | x = 130 | between two limits: in front of card 1's centre when axle 3 stops (x ≈ 135 unsleeved, 137 sleeved - otherwise it lies on the table and never tips), and not so far back that it tips with a long tail pinned under card 2 (it begins to tip when its back edge is at ~84-86, held flat by card 2's edge until free). **To tune on the rig** (`table_end`) |
 | Grip | the stack's weight on six tyres; least on the last cards | a light weight on the stack would help them - and press the faces together harder (row 1 above) |
@@ -123,9 +125,9 @@ All fit a 256 x 256 bed. `part = "..."` in the .scad, or the STEP file of the sa
 |---|---|---|---|---|
 | `bearing_test` | 1 | 90 x 21 x 30 | upright, as in the file | **before the block**: three pieces of its side wall, the 608's pocket at 22.05 / 22.20 / 22.35 mm (written on top), printed standing as the block is, so the pockets' tops are the same overhang. The size that takes a bearing by hand pressure and holds it still becomes `bearing_fit` |
 | `wheel_block` | 1 | 150 x 90 x 86 | upright | walls only, open at the bottom; the bearing housings are ribs from the table up, no overhang |
-| `wheel_plate` | 1 | 150 x 92 x 5 | flat, rails up | ironing on; the rails bare (the owner's choice, 2026-10-30: ironed rails first, PTFE tape only if the tests ask for it - see "Jams and failures") |
+| `wheel_plate` | 1 | 150 x 92 x 4.5 (2.55 under the rails; 5 / 3 for the 51.4 mm wheel) | flat, rails up | ironing on; the rails bare (the owner's choice, 2026-10-30: ironed rails first, PTFE tape only if the tests ask for it - see "Jams and failures") |
 | `wheel` | 6 | Ø 48 x 15 | flat, boss up | an O-ring on each |
-| `clutch_hub` | 2 | Ø 30 x 19 | on the horn's face | the servo horn's arms **trimmed to 26 mm** tip to tip first |
+| `clutch_hub` | 2 | Ø 35 x 19.5 | on the horn's face | for the horn **uncut** (31.3 mm, measured 2026-10-30); the servo bracket's first leg is notched for its width |
 | `servo_bracket` | 1 | 93 x 44 x 41 | on its mounting plate | holds both servos |
 | `magazine_sleeved`, `magazine_unsleeved` | 1 each | 108 x 75 x 46 | upright | the gate's guides and screw ledge are part of it; the gate goes in from below. The front wall's bottom edge is a 69 mm bridge 2.5 mm over the bed: support under it, or file it straight |
 | `gate` | 1 | 70 x 36 x 6 | on its back | round off its lower back edge if the print left a lip; PTFE tape on it |
@@ -146,7 +148,7 @@ All fit a 256 x 256 bed. `part = "..."` in the .scad, or the STEP file of the sa
 - a Raspberry Pi Pico (or Pico W); a 5 V supply of 2 A or more for the servos (not the Pi's 5 V pin: two stalling
   servos draw ~1.4 A and their spikes reach the Pi); a 470-1000 µF capacitor across the servos' supply; a 1 kΩ and two
   330 Ω resistors;
-- 6 M3 grub screws and nuts; M3 screws (plate 6, bracket 6, chute 2, base 2, Pi mount 1) and nuts; one M4 bolt and nut
+- 6 M3 grub screws (M3 x 6) and nuts; 4 M2 x 6 self-tapping screws for the horns; M3 screws (plate 6, bracket 6, chute 2, base 2, Pi mount 1) and nuts; one M4 bolt and nut
   for the camera arm; 4 M2.5 x 8 screws for the Pi, 4 M2 x 6 for the Pico (both self-tapping into the mount's
   standoffs);
 - 2 servo extension cables, 50 cm (the servos are on the feeder, the Pico on the camera post);
@@ -216,9 +218,9 @@ How a servo drives its axle, step by step, drawn from the .scad: `hardware/dropp
 (steps 1, 2 and 4 below, for one driven axle, and the drive cut along its axle).
 
 1. Print `bearing_test` first and set `bearing_fit` from it (above). Press the 608 bearings into the block's housings (from outside), the HF0812s into the hubs (arrow: gripping when
-   the card goes forward - check by hand first: a piece of rod in it turns freely one way and locks the other). Trim
-   both servo horns to 26 mm; lay each in its hub's pocket and drive two small horn screws through its holes into the
-   hub. **The horn's centre screw stays out**: once the horn is in the hub nothing can reach it (the hub's recess for
+   the card goes forward - check by hand first: a piece of rod in it turns freely one way and locks the other). Open
+   each horn's hole 10 mm from its centre to 2 mm, on both arms (the horn's holes are ~1 mm, for pushrods); lay the
+   horn, uncut, in its hub's pocket and drive two M2 x 6 self-tapping screws through those holes into the hub. **The horn's centre screw stays out**: once the horn is in the hub nothing can reach it (the hub's recess for
    its head is unused). Without it the hub can slide only 1 mm along its rod before it touches the bearing housing,
    so the horn cannot come off the servo's shaft - whether it grips the spline well enough is untested.
 2. Slide the rods through the bearings, threading the wheels on inside the block (axle 2's at ±12 mm, the others' at
@@ -324,10 +326,32 @@ hold the tyre may not be there; it held in the hand test, but a tyre that creeps
 The diameter with the ring is **still to measure** (`wheel_d`, `MM_PER_DEG`). Then `bearing_test`, with the owner's
 608-2RS bearings: **22.05 mm is snug** - the bearing goes in and comes out by hand - so `bearing_fit` stays at 22.05
 for the block. The `wheel_block` printed the same day (upright, as in the file): the six 608s press into its
-housings and fit well. Still to see once the rods are in: that an outer ring does not turn in its pocket with the rod
-spinning.
+housings and fit well; measured 86 mm high, as drawn. Still to see once the rods are in: that an outer ring does not
+turn in its pocket with the rod spinning.
 
-**Never**: the other parts printed, the fits (bearings, one-way bearings, O-rings on the grooves) tried, assembled, calibrated, run on
+**2026-10-30: the first `wheel_plate` (3 mm, as drawn then) did not fit the wheels.** The wheels measured **50.5 mm**
+across the tyres (two wheels), not the 51.4 drawn - why (the groove, the ring's section) was not measured. On the
+block's axles (64.3 mm) their tops were at 89.55: 0.55 mm above the plate instead of 1, and the rails, drawn at the
+wheels' 90, stood 0.45 mm above wheel 3 - a card laid there rested on the rails and not on that wheel. The block and
+the wheels were kept and the card plane made to follow the wheels: in the .scad `axle_z` and `block_top` are now the
+printed block's (fixed), `rail_z = axle_z + wheel_d / 2`, the plate 2.55 mm. Of the parts exported again, only the
+plate and the chute changed (the chute's top follows the card plane; its bolts through the block, `chute_bolt_z`, do
+not move); the block, the bracket, the hubs, the wheels, the gate, the tray, the landing base, the camera parts and
+the Pi mount came out the same (their STL compared triangle by triangle); the magazines differ only in rounding.
+The firmware's `MM_PER_DEG` follows (0.4407). The second plate: not printed yet.
+
+**2026-10-30: the first `clutch_hub` (Ø 30, as drawn then) did not take the owner's MG90S horn**, which was not
+trimmed to the 26 mm the plan asked. Measured: 31.28 mm tip to tip, a round centre of 6.7, arms 5.03 wide at the
+root and 4.0 at the tips, 2.09 thick (1.6 drawn), holes of ~1 mm at 4, 6, 8 ... mm from the centre. The hub was
+drawn again for the horn uncut: Ø 35, its pocket 2.49 deep (the hub 0.49 longer, the bracket's tab face 0.49 further
+out), two M2 screws at 10 mm; the bracket's first leg notched around axle 2's hub (1 mm of room, its screws 14 mm
+above and below the axle untouched). Checked in OpenSCAD: neither hub meets the bracket, the block, the other hub or
+its rod, and 0.5 mm all round is clear of the bracket - the same check on the old bracket finds the overlap. Only
+the hub and the bracket changed. The pocket is ONE polygon (`horn_outline`): FreeCAD's importer failed on a circle
+and the arms together once their outlines crossed. The second hub: not printed yet; the bracket still has the
+servo's body, tabs and shaft height as typical values, not measured.
+
+**Never**: the other parts printed, the one-way bearings tried, assembled, calibrated, run on
 a Pico, driven by the station, fed a card - so the grip, the slip, the stop's accuracy, the finish by gravity, the
 timing, the landing and every row of the contact table are unmeasured. The servo's sizes (MG90S tabs, shaft height,
 horn) are typical values: **measure the servo before printing the bracket and the hubs** (parameters at the top of

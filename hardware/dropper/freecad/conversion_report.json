@@ -9,14 +9,14 @@
   "wheel_plate": {
    "valid": true,
    "solids": 1,
-   "faces": 82,
-   "volume": 36171.5
+   "faces": 84,
+   "volume": 31073.5
   },
   "servo_bracket": {
    "valid": true,
    "solids": 1,
-   "faces": 43,
-   "volume": 37326.2
+   "faces": 46,
+   "volume": 37004.2
   },
   "wheel_axle1_left": {
    "valid": true,
@@ -57,14 +57,14 @@
   "clutch_hub_axle2": {
    "valid": true,
    "solids": 1,
-   "faces": 20,
-   "volume": 11683.2
+   "faces": 42,
+   "volume": 16909.0
   },
   "clutch_hub_axle3": {
    "valid": true,
    "solids": 1,
-   "faces": 20,
-   "volume": 11683.2
+   "faces": 42,
+   "volume": 16909.0
   },
   "rod_axle1": {
    "valid": true,
@@ -106,7 +106,7 @@
    "valid": true,
    "solids": 1,
    "faces": 38,
-   "volume": 22255.3
+   "volume": 21995.2
   },
   "tray": {
    "valid": true,
@@ -168,13 +168,13 @@
    "valid": true,
    "solids": 1,
    "faces": 38,
-   "volume": 22255.3
+   "volume": 21995.2
   },
   "clutch_hub": {
    "valid": true,
    "solids": 1,
-   "faces": 20,
-   "volume": 11683.2
+   "faces": 42,
+   "volume": 16909.0
   },
   "gate": {
    "valid": true,
@@ -209,8 +209,8 @@
   "servo_bracket": {
    "valid": true,
    "solids": 1,
-   "faces": 43,
-   "volume": 37326.2
+   "faces": 46,
+   "volume": 37004.2
   },
   "tray": {
    "valid": true,
@@ -233,8 +233,8 @@
   "wheel_plate": {
    "valid": true,
    "solids": 1,
-   "faces": 82,
-   "volume": 36171.5
+   "faces": 84,
+   "volume": 31073.5
   }
  }
 }

@@ -32,7 +32,8 @@ TRIGGER_ACTIVE_LOW = False
 AXLE2_REST_US = 600
 AXLE3_REST_US = 600
 US_PER_DEG = 11.1       # ~2000 us over ~180 degrees - check: calibrate() and a protractor
-MM_PER_DEG = 0.4486     # card travel per degree of wheel: pi x 51.4 mm / 360 - MEASURE (see the plan)
+MM_PER_DEG = 0.4407     # card travel per degree of wheel: pi x 50.5 mm / 360 (the wheels as measured,
+                        # 2026-10-30) - calibrate with a ruler on the rig (see the plan)
 MAX_STROKE_DEG = 150    # one stroke at most: a margin inside the servo's ~180 degrees
 
 # How far each axle moves the card, per card size (mm). Start SHORT and lengthen by test.
