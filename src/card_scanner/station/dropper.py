@@ -145,12 +145,17 @@ class GpiodPin:
 #    is refused, never fed; one card at a time (another number while one is under way: refused, never queued). The card is
 #    released when the feeder answers 'done' - it lies still - waited for FEEDER_WAIT_S at most (the owner's limit, 10 s),
 #    after which the release has failed and the scanning waits, saying why.
-FEEDER_WAIT_S = 10
-FEEDER_HTTP_S = 3               # one request's answer
-FEEDER_TRIES = 3                # a request whose answer was lost: asked again (the same number) this many times in all
+FEEDER_WAIT_S = 10              # the owner's limit (2026-11-12)
+# The request for a card is sent INSIDE the caller's gate, which holds the station's release_lock (station_client:
+# _still_wanted) - a stop from the page waits for it. So what runs there is bounded: FEEDER_TRIES requests of
+# FEEDER_HTTP_S each, then one "was it taken?" of FEEDER_HTTP_S - 6 s at most, a dead feeder; ~0.1 s a healthy one.
+# The boot id is read before the gate (when the feeder is opened). These three numbers and DISCOVERY_S: SUGGESTED, NOT
+# YET AGREED WITH THE OWNER (2026-11-12).
+FEEDER_HTTP_S = 2               # one request's answer
+FEEDER_TRIES = 2                # a request whose answer was lost: asked again (the same number) this many times in all
 DISCOVERY_PORT = 50505          # the feeder's auto-find (tuning.py: DISCOVERY_PORT, DISCOVERY_ASK)
 DISCOVERY_ASK = b'card-dropper?'
-DISCOVERY_S = 1.5
+DISCOVERY_S = 1.5               # answers waited for after the last question
 
 
 def feeder_http(url, form=None, timeout=FEEDER_HTTP_S):
@@ -179,9 +184,9 @@ class WifiFeeder:
         self.base = f'http://{ip}'
         self.ip, self.key = ip, pair_key
         self._http, self._clock, self._sleep = http, clock, sleep
-        self.boot = None
         self.number = 0
         self.under_way = None            # the number asked for and not yet done
+        self.boot = self._status_boot()  # here, when opened - before the caller's gate, never inside it
 
     def _status_boot(self):
         try:
@@ -200,8 +205,6 @@ class WifiFeeder:
                 self.under_way = None
 
     def _ask(self):
-        if self.boot is None:
-            self.boot = self._status_boot()
         # A number never used before by this station: the time in ms, and always more than the last one
         self.number = max(self.number + 1, int(time.time() * 1000))
         n = self.number
@@ -225,8 +228,8 @@ class WifiFeeder:
             if code in (200, 202):        # taken now, or taken before (a retry): set(False) waits for it, or says it failed
                 self.under_way = n
                 return
-            if code == 409 and answer.get('refused') == 'boot' and not boot_read:
-                self.boot, boot_read = answer.get('boot') or self._status_boot(), True   # it restarted: nothing was fed
+            if code == 409 and answer.get('refused') == 'boot' and answer.get('boot') and not boot_read:
+                self.boot, boot_read = answer['boot'], True   # it restarted: nothing was fed - its new id is in the refusal
                 continue
             if code == 409 and answer.get('refused') == 'busy':
                 raise RuntimeError('the feeder is still busy with a card - nothing asked')
@@ -242,7 +245,6 @@ class WifiFeeder:
             except OSError:
                 code, answer = None, {}
             if code == 404 or (answer.get('boot') and answer['boot'] != self.boot):
-                self.boot = None
                 raise RuntimeError('the feeder restarted while releasing the card - look at the pile before going on')
             state = answer.get('state')
             if state == 'done':

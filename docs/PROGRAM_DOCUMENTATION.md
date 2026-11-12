@@ -2226,7 +2226,12 @@ with the SAME number, which the feeder answers with that card's state and never 
 lost, the station asks whether the number was taken before saying "not released" (a card on its way is never reported as
 not released); each request carries the feeder's boot id, so a request from before its restart is refused, never fed
 (the station reads the new one and asks again - nothing was fed); one card at a time (another request while one is under
-way: refused, never queued). A restart DURING a card, a failed card, no answer: not released, and why.
+way: refused, never queued). A restart DURING a card, a failed card, no answer: not released, and why. The request is
+sent inside the gate, under the station's `release_lock` (a stop from the page waits for it), so what runs there is
+bounded: the boot id is read when the feeder is opened, before the gate (and after a restart refusal taken from the
+refusal itself), then at most `FEEDER_TRIES` (2) requests and one "was it taken?" of `FEEDER_HTTP_S` (2 s) each - 6 s
+with a dead feeder, ~0.1 s with the owner's (2026-11-12). Those numbers and `DISCOVERY_S` are suggestions, not yet agreed
+with the owner; "Drop one card" is waited for 20 s (`RemoteScanner.drop_card`).
 **Pairing** (the owner: "one pair key and one config key"): the feeder's own key (its config key, set on its Wi-Fi page)
 guards the feeder's page; pairing asks it ONCE, typed on Settings > Cameras > Card dropper, passed through the station to
 the feeder and kept nowhere; the station makes up a pair key (`secrets.token_urlsafe(24)`), the feeder keeps it, and the

@@ -238,8 +238,10 @@ class RemoteScanner:
         self._emit('review_done', {'capture_id': capture_id})
 
     def drop_card(self):
-        """The card dropper releases one card now (the Settings page's test); the cards released so far, or ValueError why not"""
-        return self._call('drop_card')
+        """The card dropper releases one card now (the Settings page's test); the cards released so far, or ValueError why not.
+        Waited for as long as a feeder over Wi-Fi may take (station/dropper.py: 6 s to ask, FEEDER_WAIT_S 10 s for the card):
+        a shorter wait said "did not answer" while the card was still coming"""
+        return self._call('drop_card', timeout=20)
 
     def find_feeders(self):
         """The feeders on the station's network (station/dropper.py: find_feeders) - it asks every address: a few seconds"""

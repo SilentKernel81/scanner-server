@@ -210,6 +210,32 @@ class TheFeeder(unittest.TestCase):
         self.assertGreater(clock.now, dropper_module.FEEDER_WAIT_S)
         self.assertEqual(dropper_module.FEEDER_WAIT_S, 10)   # the owner's limit (2026-11-12)
 
+    def test_what_runs_inside_the_gate_is_bounded(self):
+        """set(True) runs under the station's release_lock: no boot id read there, few requests, short timeouts"""
+        fake = FakeFeeder()
+        fake.down = False
+        feeder = feeder_for(fake)                            # the boot id read here, before any gate
+        fake.requests.clear()
+        fake.down = True                                     # the worst: nothing answers
+        with self.assertRaises(RuntimeError):
+            feeder.set(True)
+        self.assertFalse(any(url.endswith('/status') for url, _ in fake.requests))
+        self.assertLessEqual(len(fake.requests), dropper_module.FEEDER_TRIES + 1)
+        self.assertLessEqual((dropper_module.FEEDER_TRIES + 1) * dropper_module.FEEDER_HTTP_S, 6)
+        fake.down = False
+        fake.restart()                                       # a restart refused: its new id taken from the refusal itself
+        fake.requests.clear()
+        feeder.set(True)
+        self.assertFalse(any(url.endswith('/status') for url, _ in fake.requests))
+        self.assertEqual(feeder.boot, 'feedfeed')
+
+    def test_drop_one_card_is_waited_for_long_enough(self):
+        from card_scanner.core import remote_scanner
+        remote = remote_scanner.RemoteScanner(mock.Mock(), FakeSettings())
+        with mock.patch.object(remote, '_call', return_value=1) as call:
+            remote.drop_card()
+        self.assertGreaterEqual(call.call_args.kwargs['timeout'], dropper_module.FEEDER_WAIT_S + 6)
+
     def test_numbers_only_grow(self):
         fake = FakeFeeder(done_after=1)
         feeder = feeder_for(fake)
@@ -261,8 +287,9 @@ class TheDropper(unittest.TestCase):
     def test_a_failure_is_no_card_and_its_reason(self):
         self.dropper.configure(dict(WIFI_ON))
         self.fake.down = True
-        self.assertFalse(self.dropper.pulse('a test'))
+        self.assertFalse(self.dropper.pulse('a test'))       # not even opened: its boot id cannot be read
         self.assertIn('does not answer', self.dropper.error)
+        self.assertEqual(self.fake.results, {})
         self.fake.down = False
         self.assertTrue(self.dropper.pulse('again'))         # opened again, the next time
         self.assertIsNone(self.dropper.error)
