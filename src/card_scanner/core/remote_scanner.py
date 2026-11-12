@@ -36,7 +36,7 @@ CAMERA_SETTINGS = ('focus_value', 'camera_rotation', 'refocus_every', 'refocus_o
                    'debug_trace', 'dropper')
 # CardScanner methods the server may call on the client
 METHODS = ('set_rotation', 'set_refocus_every', 'set_refocus_on_drop', 'set_fixed_area', 'set_detection_enabled',
-           'set_continuous_autofocus', 'reset_focus', 'detected_area', 'capture', 'drop_card')
+           'set_continuous_autofocus', 'reset_focus', 'detected_area', 'capture', 'drop_card', 'find_feeders', 'pair_feeder')
 # Attributes the server decides: sent when set, and again to a client that connects
 DECIDED = {'fast_scan_mode': True, 'required_stable_frames': Config.FAST_SCAN_STABILITY_FRAMES,
            'auto_capture_delay': Config.AUTO_CAPTURE_DELAY, 'debug_trace_enabled': False,
@@ -240,6 +240,14 @@ class RemoteScanner:
     def drop_card(self):
         """The card dropper releases one card now (the Settings page's test); the cards released so far, or ValueError why not"""
         return self._call('drop_card')
+
+    def find_feeders(self):
+        """The feeders on the station's network (station/dropper.py: find_feeders) - it asks every address: a few seconds"""
+        return self._call('find_feeders', timeout=10)
+
+    def pair_feeder(self, ip, config_key):
+        """The station pairs the feeder at ip, with its config key (passed on, never kept): {'feeder', 'pair_key'}"""
+        return self._call('pair_feeder', ip, config_key, timeout=10)
 
     def is_card_detected(self):
         return bool(self._detection.get('detected'))

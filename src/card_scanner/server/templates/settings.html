@@ -132,17 +132,39 @@
                             </div>
                         </div>
 
-                        <!-- The card dropper (station/dropper.py): a mechanism wired to the station's GPIO pins releases the next card - off unless switched on.
-                             What it drives is the mechanism's business; the station only pulses the pin, once per card (settings.js: applyDropper) -->
+                        <!-- The card dropper (station/dropper.py): a mechanism wired to the station's GPIO pins, or a feeder on the network paired with
+                             the station, releases the next card - off unless switched on. One pulse, or one request, per card (settings.js: applyDropper) -->
                         <div class="settings-card">
                             <h3>Card dropper</h3>
                             <label class="switch-row">
                                 <span class="switch-text">
                                     <span class="switch-title">Release the next card by itself</span>
-                                    <span class="switch-desc">For a mechanism wired to the station's GPIO pins: one pulse per card, after each capture</span>
+                                    <span class="switch-desc">A mechanism wired to the station's GPIO pins, or a feeder on its Wi-Fi: one card after each capture</span>
                                 </span>
                                 <input type="checkbox" class="switch" id="toggle-dropper">
                             </label>
+                            <div class="input-group">
+                                <label for="dropper-transport">Released by</label>
+                                <select id="dropper-transport" class="select narrow">
+                                    <option value="gpio">A GPIO pin of this station</option>
+                                    <option value="wifi">A feeder over Wi-Fi</option>
+                                </select>
+                            </div>
+                            <div id="dropper-wifi" hidden>
+                                <div class="hint" id="dropper-feeder"></div>
+                                <div class="settings-actions">
+                                    <button type="button" class="btn btn-small" id="dropper-find">Find feeders</button>
+                                    <button type="button" class="btn btn-small" id="dropper-forget" hidden>Forget this feeder</button>
+                                </div>
+                                <div id="dropper-found"></div>
+                                <div class="input-group" id="dropper-pairing" hidden>
+                                    <label for="dropper-config-key">The feeder's key</label>
+                                    <input type="password" id="dropper-config-key" class="text-input narrow" autocomplete="off" spellcheck="false">
+                                    <div class="hint">The key set on the feeder's own Wi-Fi page. Used once to pair, kept nowhere: the feeder then
+                                        gives this station a key of its own, which only feeds cards.</div>
+                                </div>
+                            </div>
+                            <div id="dropper-gpio">
                             <div class="input-group">
                                 <label for="dropper-pin">GPIO pin</label>
                                 <input type="number" id="dropper-pin" class="text-input narrow" min="0" max="63" step="1" inputmode="numeric" placeholder="17">
@@ -172,6 +194,7 @@
                                     <input type="checkbox" class="switch" id="dropper-active-low">
                                 </label>
                             </details>
+                            </div>
                             <div class="settings-actions">
                                 <button type="button" class="btn btn-small" id="dropper-test">Drop one card</button>
                             </div>

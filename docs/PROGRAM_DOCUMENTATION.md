@@ -2213,6 +2213,39 @@ a feed for right after it - its plan is in that repository). A station can relea
 Raspberry Pi; what the pin drives (a servo's driver, a relay, a solenoid's transistor) is the mechanism's business - one
 pulse means one card. Off unless switched on for a camera (Settings > Cameras > This camera > Card dropper).
 
+**A feeder over Wi-Fi** (since 2026-11-12, the owner: the card-dropper's sideways feeder, an ESP32, takes its cards "either
+wifi or bluetooth" - Wi-Fi first, Bluetooth for the phone later; the Pi's pin stays the other choice): *Released by: A feeder
+over Wi-Fi* (`transport` `wifi`). It goes through the very same `Dropper.pulse` - its lock, the caller's gate - as the pin:
+`WifiFeeder` is the "pin", `set(True)` asks the feeder for one card (inside the gate: the card is on its way once the feeder
+took the request) and `set(False)` waits until the feeder says the card is `done` - **10 s at most** (`FEEDER_WAIT_S`, the
+owner's limit), after which the release has failed, `Dropper.error` says why and the scanning waits, as for a pin that
+cannot be used. The feeder's rules (card-dropper: `sideways/firmware/main.py` `request_feed`, `docs/MECHANISM_PLAN.md`
+"the feed over Wi-Fi"): **one request is one card** - `POST /feed` (`key`, `boot`, `n`), then `GET /feed?n=` until
+`done`; the station numbers its requests (the time in ms, always growing); a request whose answer was lost is sent again
+with the SAME number, which the feeder answers with that card's state and never feeds twice - and when every answer was
+lost, the station asks whether the number was taken before saying "not released" (a card on its way is never reported as
+not released); each request carries the feeder's boot id, so a request from before its restart is refused, never fed
+(the station reads the new one and asks again - nothing was fed); one card at a time (another request while one is under
+way: refused, never queued). A restart DURING a card, a failed card, no answer: not released, and why.
+**Pairing** (the owner: "one pair key and one config key"): the feeder's own key (its config key, set on its Wi-Fi page)
+guards the feeder's page; pairing asks it ONCE, typed on Settings > Cameras > Card dropper, passed through the station to
+the feeder and kept nowhere; the station makes up a pair key (`secrets.token_urlsafe(24)`), the feeder keeps it, and the
+server keeps it in the camera's `dropper` settings (`pair_key`, sent to the station like the rest; `dropper_payload`
+gives the page only `paired`, and `set_dropper` keeps the saved `feeder` and `pair_key` whatever the page sends). Events:
+`find_feeders` (answered `feeders_found`), `pair_feeder` (`ip`, `config_key`; answered `feeder_paired`),
+`forget_feeder` (this side only; the feeder forgets the station on its own page). Switched to the feeder and on before
+one is paired: saved off, and the page says to pair one first. **Finding it** (`find_feeders`, run by the STATION - the
+feeder is on the station's network, not necessarily the server's): UDP port 50505, the question `card-dropper?`, sent to
+the broadcast address AND to every address of the station's way-out /24 directly - on the owner's PC (ufw, 2026-11-12)
+the broadcast's answer never came back (it comes from another address than the one asked), every direct one does; only
+the way-out network (asking Docker's and a virtual machine's networks too took 14 s instead of 1.5). A station in a
+Docker container on a bridge network sees only its bridge: not tried.
+Tried: `tests/test_station_dropper_wifi.py` (a stand-in feeder with the firmware's rules: lost answers, restarts, busy,
+a failed card, the 10 s limit, the gate, pairing, the server's events - the key never reaching the page) and, against
+the owner's real feeder at 192.168.51.108 from this PC (2026-11-12): found in 1.5 s (three times), a pairing with a wrong
+key refused, a feed with a made-up pair key refused - nothing fed. **Not tried: a real pairing and a real card** (they
+need the owner's key), the page in a browser, a station on a Raspberry Pi.
+
 **When a card is released** (`Station.release_next_card`, always in the background):
 - **auto-add on**: once the server has ANSWERED the capture's upload, and not with `card_back` (`Station.after_upload`,
   from `send_until_settled` on an accepted upload; the upload item carries `release_session`, in memory only - never in
@@ -3261,7 +3294,7 @@ Socket.IO events of the pages (namespace `/`; the stations' own connection is de
 | Page → server | Server → page |
 |---|---|
 | `capture_card`, `search_card`, `select_printing`, `add_to_inventory` (`finish` + `quantity`, or `items` for several finishes), `undo_last_add` (with `station` from Settings → Cameras: that camera's), `dismiss_card` (`keep_capture` from the automatic "not found" dismissal) | `card_captured`, `card_found`, `card_printings`, `similar_cards`, `card_not_found`, `inventory_updated` (`added`: what was added; `undone`: a station's card taken back; `cleared`: scanned cards were cleared - only the counters reload), `inventory_prices_updated` (prices fetched after an add, or the entries priced again), `price_source_changed` (another price source: its currency; sent by `POST /api/prices/source`), `inventory_undone`, `card_dismissed` |
-| `toggle_auto_capture`, `toggle_fast_scan` (add automatically), `toggle_detection`, `toggle_ocr` (read with OCR first), `toggle_ai` (ask the vision AI at all; answers `ai_toggled`; open like `toggle_ocr`: it adds nothing, it only stops asking), `set_reading_mode` (`mode`: cascade / evidence, and / or `accept_image_alone`, `extend_index`; guarded; answered by `reading_mode_changed`, which carries the status the page shows), `toggle_debug_trace`, `toggle_debug_mode` (Debug mode, for the next start: the request log, and the interactive debugger only where `program.debugger_allowed` says so), `reset_focus` (refocus + lock), `set_autofocus`, `set_fixed_area` (`enabled` / `area` / `use_detected`), `set_camera_rotation`, `set_refocus_every` (`captures`: focus probe interval), `toggle_stop_at_card_back` (`enabled`: a card back stops this camera; answered `stop_at_card_back_toggled`), `set_dropper` (`dropper`: the card dropper's settings, checked whole; answered `dropper_updated`), `test_dropper` (one pulse now; answered `dropper_tested`) | `auto_capture_triggered` (image taken, focus probe done: drop the next card), `auto_capture_toggled` (also when the station's client restarted or went away, and when a card back stopped it), `card_back_seen` (`number`, `similarity`: a face-down card stopped this camera's auto-capture), `processing_queue_update` (the station's captures being read), `*_toggled`, `focus_reset`, `fixed_area_updated`, `camera_rotation_updated`, `refocus_every_updated` |
+| `toggle_auto_capture`, `toggle_fast_scan` (add automatically), `toggle_detection`, `toggle_ocr` (read with OCR first), `toggle_ai` (ask the vision AI at all; answers `ai_toggled`; open like `toggle_ocr`: it adds nothing, it only stops asking), `set_reading_mode` (`mode`: cascade / evidence, and / or `accept_image_alone`, `extend_index`; guarded; answered by `reading_mode_changed`, which carries the status the page shows), `toggle_debug_trace`, `toggle_debug_mode` (Debug mode, for the next start: the request log, and the interactive debugger only where `program.debugger_allowed` says so), `reset_focus` (refocus + lock), `set_autofocus`, `set_fixed_area` (`enabled` / `area` / `use_detected`), `set_camera_rotation`, `set_refocus_every` (`captures`: focus probe interval), `toggle_stop_at_card_back` (`enabled`: a card back stops this camera; answered `stop_at_card_back_toggled`), `set_dropper` (`dropper`: the card dropper's settings, checked whole; answered `dropper_updated`), `test_dropper` (one pulse now; answered `dropper_tested`), `find_feeders` (answered `feeders_found`), `pair_feeder` (`ip`, `config_key`; answered `feeder_paired`), `forget_feeder` (answered `dropper_updated`) | `auto_capture_triggered` (image taken, focus probe done: drop the next card), `auto_capture_toggled` (also when the station's client restarted or went away, and when a card back stopped it), `card_back_seen` (`number`, `similarity`: a face-down card stopped this camera's auto-capture), `processing_queue_update` (the station's captures being read), `*_toggled`, `focus_reset`, `fixed_area_updated`, `camera_rotation_updated`, `refocus_every_updated` |
 | `set_ai_provider`, `save_ai_credential`, `update_database` (the active game's data) | `ai_provider_set`, `ai_credential_saved`, `database_update_progress` / `_complete` / `_error`, `database_update_available` (update check found newer data), `log`, `error` |
 | `save_prompt` (scope `model` / `all`), `reset_prompt`, `test_prompt` | `prompts_updated`, `prompt_test_result` (sent only to the page that asked) |
 | `review_open`, `review_skip`, `review_close` | `review_item` (the station's oldest item, or `id: null` when empty; `station`: its name; `candidates`: the printings the picture looks like, `[]` without an index), `review_queue_update` (count; `queued: true` when a card was just queued - the page plays the queue alert) |

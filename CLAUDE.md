@@ -107,7 +107,7 @@ Imports are written out in full (`from card_scanner.core import inventory`,
 in `src/ocr/`. The top folder has two Python files, the launchers `app.py` (server) and
 `station.py` (a station), plus `config.yaml`, `.env` and the data (`data/`, `scanned_cards/`,
 `station_captures/`). The card dropper's mechanism (its CAD and Pico firmware) is a project of its own since
-2026-10-30, `SilentKernel81/card-dropper` (private for now): only the station's pulse is here. `scripts/setup_database.py` and `scripts/cleanup.py` start the two tools.
+2026-10-30, `SilentKernel81/card-dropper` (private for now): only the station's side is here - its pulse, and since 2026-11-12 its requests to a feeder over Wi-Fi. `scripts/setup_database.py` and `scripts/cleanup.py` start the two tools.
 
 **More of this map, and the rules that go with it, lie beside the code** - each loaded when working
 under its folder: [`src/card_scanner/station/CLAUDE.md`](src/card_scanner/station/CLAUDE.md) (the camera station: capture,

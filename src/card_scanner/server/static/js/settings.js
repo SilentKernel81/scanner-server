@@ -155,6 +155,12 @@ function connect() {
     socket.on('refocus_on_drop_updated', data => showRefocusOnDrop(data.ratio));
     socket.on('fixed_area_updated', () => loadCameraSettings());
     socket.on('dropper_updated', applyDropper);
+    socket.on('feeders_found', showFeedersFound);
+    socket.on('feeder_paired', data => {
+        $('dropper-config-key').value = '';          // used once, kept nowhere
+        if (data.ok) { $('dropper-found').textContent = ''; $('dropper-pairing').hidden = true; }
+        notify(data.ok ? `Paired with the feeder at ${data.feeder.ip}` : `Not paired: ${data.message}`, data.ok ? 'success' : 'error');
+    });
     socket.on('dropper_tested', data => notify(data.ok ? `Card released (${plural(data.pulses, 'card')} since the station started)`
                                                        : `The card dropper did not release a card: ${data.message}`, data.ok ? 'success' : 'error'));
 
@@ -293,6 +299,14 @@ function applyDropper(payload) {
     if (document.activeElement !== $('dropper-pulse')) $('dropper-pulse').value = String(settings.pulse_ms);
     if (document.activeElement !== $('dropper-chip')) $('dropper-chip').value = settings.chip || '';
     $('dropper-active-low').checked = Boolean(settings.active_low);
+    const wifi = settings.transport === 'wifi';
+    $('dropper-transport').value = wifi ? 'wifi' : 'gpio';
+    $('dropper-gpio').hidden = wifi;
+    $('dropper-wifi').hidden = !wifi;
+    const feeder = settings.feeder;
+    $('dropper-feeder').textContent = feeder && settings.paired
+        ? `Paired with ${feeder.name || 'the feeder'} at ${feeder.ip}.` : 'No feeder paired yet: find it on the station\'s network.';
+    $('dropper-forget').hidden = !(feeder && settings.paired);
     $('dropper-test').disabled = !settings.enabled || !payload.connected;
     $('dropper-state').textContent = !payload.connected ? 'The station is not connected: its settings are sent when it connects.'
         : !state ? 'This station\'s program has no card dropper yet - update the station.'
@@ -302,15 +316,42 @@ function applyDropper(payload) {
 }
 
 function saveDropper() {
-    // The whole set each time: the server checks it whole (an empty pin is "none")
+    // The whole set each time: the server checks it whole (an empty pin is "none"); the paired feeder is the server's to keep
     const pin = $('dropper-pin').value.trim();
     socket.emit('set_dropper', {dropper: {
         enabled: $('toggle-dropper').checked,
+        transport: $('dropper-transport').value,
         pin: pin === '' ? null : parseInt(pin, 10),
         pulse_ms: parseInt($('dropper-pulse').value, 10),
         chip: $('dropper-chip').value.trim(),
         active_low: $('dropper-active-low').checked,
     }});
+}
+
+// A feeder over Wi-Fi: the station looks on its own network (find_feeders), and pairs the one chosen with the feeder's key (pair_feeder)
+function showFeedersFound(data) {
+    const list = $('dropper-found');
+    list.textContent = '';
+    if (!data.ok) { notify(`Could not look for feeders: ${data.message}`, 'error'); return; }
+    if (!data.feeders.length) { list.textContent = 'No feeder answered on the station\'s network.'; return; }
+    $('dropper-pairing').hidden = false;
+    for (const feeder of data.feeders) {
+        const row = document.createElement('div');
+        row.className = 'settings-actions';
+        const label = document.createElement('span');
+        label.textContent = `${feeder.name} at ${feeder.ip}` + (feeder.paired ? ` (paired with ${feeder.station || 'a station'})` : '');
+        const pair = document.createElement('button');
+        pair.type = 'button';
+        pair.className = 'btn btn-small';
+        pair.textContent = 'Pair';
+        pair.addEventListener('click', () => {
+            const key = $('dropper-config-key').value;
+            if (!key) { notify('Type the feeder\'s key first', 'error'); $('dropper-config-key').focus(); return; }
+            socket.emit('pair_feeder', {ip: feeder.ip, config_key: key});
+        });
+        row.append(label, pair);
+        list.append(row);
+    }
 }
 
 // The two focus checks act on a LOCKED focus only (autofocus off): greyed out while the camera focuses by itself
@@ -392,9 +433,14 @@ function bindCameras() {
         socket.emit('set_refocus_on_drop', {ratio: parseFloat(event.target.value)}));
     $('camera-rotation').addEventListener('change', event =>
         socket.emit('set_camera_rotation', {rotation: parseInt(event.target.value)}));
-    for (const id of ['toggle-dropper', 'dropper-pin', 'dropper-pulse', 'dropper-chip', 'dropper-active-low']) {
+    for (const id of ['toggle-dropper', 'dropper-transport', 'dropper-pin', 'dropper-pulse', 'dropper-chip', 'dropper-active-low']) {
         $(id).addEventListener('change', saveDropper);
     }
+    $('dropper-find').addEventListener('click', () => {
+        $('dropper-found').textContent = 'Looking on the station\'s network...';
+        socket.emit('find_feeders', {});
+    });
+    $('dropper-forget').addEventListener('click', () => socket.emit('forget_feeder', {}));
     $('dropper-test').addEventListener('click', () => socket.emit('test_dropper', {}));
     $('toggle-debug-trace').addEventListener('change', event => {
         socket.emit('toggle_debug_trace', {enabled: event.target.checked});

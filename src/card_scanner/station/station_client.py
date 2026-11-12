@@ -40,6 +40,7 @@ import signal
 import socketio
 
 from card_scanner.station import station_setup
+from card_scanner.station import dropper as dropper_module
 from card_scanner.station.dropper import Dropper
 from card_scanner.config import Config
 
@@ -504,6 +505,10 @@ class Station:
                 result = True
             elif method == 'drop_card':       # the station's own, not CardScanner's: the dropper is the station's
                 result = self.drop_card()
+            elif method == 'find_feeders':    # a feeder over Wi-Fi is found from the station: it is on the station's network
+                result = dropper_module.find_feeders()
+            elif method == 'pair_feeder':     # (ip, config_key): the pair key goes back to the server, which keeps it
+                result = dropper_module.pair_feeder(*data.get('args', [])[:2], station_name=self.name)
             elif method in METHODS:
                 result = getattr(self.scanner, method)(*data.get('args', []), **data.get('kwargs', {}))
             else:

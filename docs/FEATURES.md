@@ -155,7 +155,11 @@ game sits behind one interface (`games/`), so another could be added.
 - **A card dropper** (since 2026-10-22, the station's code; the mechanism below): a station can pulse a GPIO pin of its Raspberry Pi to release the next
   card itself - once the server has each capture (and it was not a card back), after Add / Skip with auto-add off, the first
   card when scanning starts; one pulse per card, never more, and none while the server is away. Settings > Cameras > Card dropper, with a "Drop one card" test. Tested with a stand-in pin; never with a
-  real pin or mechanism.
+  real pin or mechanism. Since 2026-11-12 **also a feeder over Wi-Fi** (the card-dropper's sideways feeder): found on the
+  station's network, paired once with the feeder's own key (the station then has a key of its own, kept on the server, never
+  shown), one numbered request per card, each waited for until the card lies still (10 s at most). Tested with a stand-in
+  feeder; against the real one only finding it and refusals (wrong key, made-up pair key) - never a real pairing or card,
+  never the page in a browser.
 - **The card dropper's mechanism** (2026-10-22/23; since 2026-10-30 a project of its own, `SilentKernel81/card-dropper`): a 3D-printed feeder for sleeved
   and unsleeved cards - six silicone-tyred wheels under the stack (two of the three axles driven by servos through
   one-way bearings) roll only the bottom card out under an adjustable gate; it slides on its back into a tray under a

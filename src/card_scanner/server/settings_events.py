@@ -454,7 +454,25 @@ def dropper_payload():
         settings = dropper_checked(scanner.dropper)
     except ValueError:
         settings = dropper_checked(None)
+    # The pair key stays on the server and the station: the page only learns that there is one
+    settings = dict(settings, paired=settings.pop('pair_key') is not None)
     return {'settings': settings, 'state': scanner.dropper_state if scanner.connected else None, 'connected': bool(scanner.connected)}
+
+
+def saved_dropper():
+    """This camera's dropper settings as saved (the defaults when none or wrong ones)"""
+    try:
+        return dropper_checked(scanner.dropper)
+    except ValueError:
+        return dropper_checked(None)
+
+
+def keep_dropper(values):
+    """Checked, saved, sent to the station (RemoteScanner: DECIDED 'dropper'), now and whenever it connects"""
+    values = dropper_checked(values)
+    scanner.dropper = values
+    scanner.settings.set('dropper', values)
+    return values
 
 
 @socketio.on('set_dropper')
@@ -467,15 +485,74 @@ def handle_set_dropper(data):
     if not scanner:
         emit('error', {'message': 'Scanner not initialized'})
         return
+    asked = dict((data or {}).get('dropper') or {})
+    # The paired feeder and its key come from pairing only (pair_feeder), never from the form: kept as they are
+    asked.pop('paired', None)
+    saved = saved_dropper()
+    asked['feeder'], asked['pair_key'] = saved['feeder'], saved['pair_key']
+    if asked.get('enabled') and asked.get('transport') == 'wifi' and saved['pair_key'] is None:
+        # A feeder chosen before one is paired: kept, but off - the page then shows where to find and pair it
+        asked['enabled'] = False
+        emit('error', {'message': 'Pair a feeder first: the card dropper stays off until then'})
     try:
-        values = dropper_checked((data or {}).get('dropper'))
+        values = keep_dropper(asked)
     except ValueError as e:
         emit('error', {'message': str(e)})
         emit('dropper_updated', dropper_payload())    # the page goes back to what is saved
         return
-    scanner.dropper = values
-    scanner.settings.set('dropper', values)
-    logger.info(f"Card dropper: {'on, GPIO' + str(values['pin']) + ', ' + str(values['pulse_ms']) + ' ms' if values['enabled'] else 'off'}")
+    if values['enabled']:              # (on: a pin, or a paired feeder - checked)
+        how = f"the feeder at {values['feeder']['ip']}" if values['transport'] == 'wifi' else f"GPIO{values['pin']}, {values['pulse_ms']} ms"
+        logger.info(f"Card dropper: on, {how}")
+    else:
+        logger.info("Card dropper: off")
+    emit('dropper_updated', dropper_payload())
+
+
+@socketio.on('find_feeders')
+def handle_find_feeders(_data=None):
+    """The Settings page's "Find feeders": the station looks on its network (station/dropper.py: find_feeders)"""
+    if not scanner:
+        emit('feeders_found', {'ok': False, 'message': 'Scanner not initialized'})
+        return
+    try:
+        feeders = scanner.find_feeders()
+    except ValueError as e:
+        emit('feeders_found', {'ok': False, 'message': str(e)})
+        return
+    emit('feeders_found', {'ok': True, 'feeders': feeders})
+
+
+@socketio.on('pair_feeder')
+def handle_pair_feeder(data):
+    """
+    Pair the feeder at `ip` with this camera's station: the feeder's own key (the owner's, typed on the page) is passed to it
+    through the station once and kept nowhere; the pair key it then takes is kept with the camera's settings, never shown.
+    The dropper's transport becomes the feeder; switched on or off as it was.
+    """
+    if not scanner:
+        emit('feeder_paired', {'ok': False, 'message': 'Scanner not initialized'})
+        return
+    data = data or {}
+    try:
+        paired = scanner.pair_feeder(str(data.get('ip') or ''), str(data.get('config_key') or ''))
+        values = keep_dropper(dict(saved_dropper(), transport='wifi', feeder=paired['feeder'], pair_key=paired['pair_key']))
+    except (ValueError, TypeError, KeyError) as e:
+        emit('feeder_paired', {'ok': False, 'message': str(e)})
+        return
+    logger.info(f"Card dropper: paired with the feeder at {values['feeder']['ip']}")
+    emit('feeder_paired', {'ok': True, 'feeder': values['feeder']})
+    emit('dropper_updated', dropper_payload())
+
+
+@socketio.on('forget_feeder')
+def handle_forget_feeder(_data=None):
+    """Forget the paired feeder (this side only: the feeder forgets the station on its own page). Off, if it drove it"""
+    if not scanner:
+        emit('error', {'message': 'Scanner not initialized'})
+        return
+    saved = saved_dropper()
+    keep_dropper(dict(saved, enabled=saved['enabled'] and saved['transport'] != 'wifi', feeder=None, pair_key=None))
+    logger.info("Card dropper: the paired feeder forgotten")
     emit('dropper_updated', dropper_payload())
 
 
