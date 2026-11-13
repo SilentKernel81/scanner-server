@@ -3032,9 +3032,11 @@ printings while the card data has no `games` yet or the card has no Arena printi
 it was the rarity of whichever printing stood for the card (a Commander reprint made
 Banishing Light, a Foundations common, an "uncommon"); still not checked against Arena itself; and a card Arena does not have is a problem of the deck ("Not on
 Arena"), not a wildcard. `DeckManager.replace_arena_decks` replaces, in one transaction,
-the decks the last import brought by the ones this one brings (a deck still there keeps
-its cover); decks made here, also Arena ones, have no `arena_id` and stay. So a change
-made here to a deck that came from Arena lasts until the next import with a deck file.
+EVERY Arena deck (`kind = 'arena'`) by the ones this import brings (a deck still there keeps
+its cover, found again by its `arena_id`): after an import with a deck file the Arena decks
+are exactly the file's. Since 2026-11-13 that includes Arena decks made or copied here (no
+`arena_id`), which stayed before; paper decks are never touched. So a change made here to any
+Arena deck lasts until the next import with a deck file - a deck to keep is copied as Physical.
 The deck list filters All | Physical | Arena (`decks.js`: `deckKindShown`); New deck asks
 for the kind, and so does **Duplicate** (`POST /api/decks/<id>/duplicate` with `kind`;
 `DeckManager.duplicate(kind)`): a copy of the other kind is the same list counted against
@@ -3522,8 +3524,8 @@ front, an older phone app, a failing check, the sync route's 409 - through Flask
 `tests/test_arena_collection.py` covers the digital collection and the decks' two kinds, on
 temporary files and made-up exports: reading the exporter's two files and refusing others,
 finding an entry's card (set and number only when the name agrees), an inventory replaced
-whole or not at all, the deck table's new columns on an old file, Arena's decks replaced
-while decks made here stay, and the digital collection in backups.
+whole or not at all, the deck table's new columns on an old file, every Arena deck replaced
+(also one made here) while paper decks stay, and the digital collection in backups.
 
 There are no automated tests for the rest. [TEST_CASES.md](TEST_CASES.md) lists what to check
 by hand. For scanner logic, recorded or synthetic frames can be fed through `CardScanner` with

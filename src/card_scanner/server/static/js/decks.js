@@ -135,7 +135,7 @@ function deckTileHtml(item) {
                     ? `<img src="${escapeHtml(cover.image_uri)}" alt="${escapeHtml(cover.name)}" title="${escapeHtml(cover.name)}" loading="lazy">`
                     : '<span class="deck-tile-empty">No cards yet</span>'}
                 ${item.kind === 'arena' ? `<span class="deck-kind-badge" title="${item.from_arena
-                    ? 'A deck from MTG Arena: the next import brings it again as it is there' : 'A deck for MTG Arena, made here'}">Arena</span>` : ''}
+                    ? 'A deck from MTG Arena: the next import brings it again as it is there' : 'A deck for MTG Arena, made here: the next import with a deck file removes it'}">Arena</span>` : ''}
                 ${(item.covers || []).length > 1
                     ? `<button class="deck-flip" data-flip title="Show the other commander: ${escapeHtml(item.covers[(coverIndex(item) + 1) % item.covers.length].name)}"><svg class="icon"><use href="#i-swap"/></svg></button>` : ''}
             </span>
@@ -767,7 +767,7 @@ function renderDeck() {
     const digital = deck.kind === 'arena';
     const wild = digital ? wildcardsHtml(deck.wildcards) : '';
     $('deck-totals').innerHTML = `
-        ${digital ? `<span class="deck-kind-badge" title="${deck.from_arena ? 'This deck came from MTG Arena: the next import replaces it with what it is there then - changes made here are lost' : 'A deck for MTG Arena, made here: counted against your Arena collection'}">Arena</span>` : ''}
+        ${digital ? `<span class="deck-kind-badge" title="${deck.from_arena ? 'This deck came from MTG Arena: the next import replaces it with what it is there then - changes made here are lost' : 'A deck for MTG Arena, made here: counted against your Arena collection. The next Arena import with a deck file removes it - every Arena deck is then the file\'s'}">Arena</span>` : ''}
         <span><strong>${totals.cards}</strong> cards${totals.side ? ` <small>+ ${totals.side} ${considering ? 'considered' : 'sideboard'}</small>` : ''}</span>
         ${digital ? '' : `<span><strong>${money(totals.price)}</strong> value</span>`}
         <span title="${totals.missing ? `${plural(totals.missing, 'card')} missing` : digital ? 'Every card is in your Arena collection' : 'You own every card'}"><strong>${owned}%</strong> ${digital ? 'in Arena' : 'owned'}${

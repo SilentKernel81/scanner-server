@@ -36,7 +36,7 @@ against it, and a card it lacks costs a **wildcard** of its rarity (basic lands 
 answers say wildcards, not money. `suggest_for_deck` only knows commander decks (EDHREC); for a
 60-card deck, `search_cards(collection='arena', deck_format='standard', identity='GW', text='lifelink')`
 finds the candidates you own. A deck that came from an Arena export is replaced by the next import:
-change it in Arena itself.
+change it in Arena itself. An import with a deck file replaces every Arena deck, also one made here.
 
 ## Install (once)
 

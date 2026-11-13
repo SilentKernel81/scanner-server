@@ -282,8 +282,9 @@ This one was sent back from the collection.*
 
 - **Your Arena collection** read from an exporter's files and kept as a read-only copy beside
   the paper collection, with the wildcards you would need for a deck.
-- **Arena decks** imported next to the paper ones (and replaced by the next import), checked
-  against what you own in Arena.
+- **Arena decks** imported next to the paper ones, checked against what you own in Arena. An
+  import with the deck file replaces every Arena deck - also one made or copied here - by the
+  file's; paper decks stay.
 - **A decklist for Arena's Import button** from any deck.
 
 *The digital (MTG Arena) collection, kept beside the paper one.*

@@ -225,7 +225,8 @@ def arena_facts(data):
             'wildcards': data.get('wildcards') or {},
             'from_arena_export': bool(data.get('from_arena')),
             'how_to_change': ('make the change in MTG Arena (this deck came from an Arena export: the next import replaces it)'
-                              if data.get('from_arena') else 'make the change on the decks page, then export the deck to Arena')}
+                              if data.get('from_arena') else 'make the change on the decks page, then export the deck to Arena - '
+                                   'the next Arena import with a deck file removes this deck')}
 
 
 def check_deck(api, deck):
@@ -583,7 +584,8 @@ def create_deck(api, name, deck_format, kind='paper', cards=None, commander='', 
     'arena' (planned against the MTG Arena collection); cards: [{'name', 'quantity', 'board': 'main' |
     'side'}]; commander: the commander's name for a commander format. Checked first like
     propose_deck_changes (legal, colours, copies); a problem refuses it unless allow_problems=true.
-    A deck made here has no Arena id: an Arena import never replaces it.
+    An Arena deck made here (kind 'arena') is removed by the next Arena import with a deck file: every
+    Arena deck is then the file's. A paper deck is never touched by an import.
     """
     name, deck_format, kind = str(name or '').strip(), str(deck_format or '').strip().lower(), str(kind or 'paper').lower()
     if not name:

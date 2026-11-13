@@ -8,8 +8,9 @@ On temporary files and made-up exports:
   - reading the exporter's two files, and refusing what is not one of them;
   - finding each entry's card: by Arena's set and number only when the name agrees;
   - an inventory replaced as a whole, or not at all;
-  - decks: the new columns on a file from before, Arena's decks replaced by the next import
-    while decks made here stay, and paper and Arena decks not competing for a card.
+  - decks: the new columns on a file from before, every Arena deck (also one made here)
+    replaced by the next import while paper decks stay, and paper and Arena decks not
+    competing for a card.
 What the server makes of a real export is tried on a test server, not here.
 """
 import json
@@ -289,7 +290,7 @@ class DecksOfTwoKinds(Temporary):
         with self.assertRaises(ValueError):
             decks.create('mtg', 'Nope', 'standard', kind='cardboard')
 
-    def test_arenas_decks_are_replaced_and_decks_made_here_stay(self):
+    def test_every_arena_deck_is_replaced_and_paper_decks_stay(self):
         decks = self.decks()
         paper = decks.create('mtg', 'Paper', 'standard')
         mine = decks.create('mtg', 'Planned here', 'historic', kind='arena')
@@ -299,10 +300,16 @@ class DecksOfTwoKinds(Temporary):
         decks.update(first[0], cover='Forest')
         decks.replace_arena_decks('mtg', [{'arena_id': 'a', 'name': 'Elves v2', 'format': 'historic', 'cards': [card('Forest', 9)]}])
         listed = {deck['name']: deck for deck in decks.list_decks('mtg')}
-        self.assertEqual(sorted(listed), ['Elves v2', 'Paper', 'Planned here'])            # 'Gone soon' left Arena, and here
+        # 'Gone soon' left Arena, and here; 'Planned here' (an Arena deck made here) is not in the file, so it goes too
+        self.assertEqual(sorted(listed), ['Elves v2', 'Paper'])
         self.assertEqual((listed['Elves v2']['kind'], listed['Elves v2']['arena_id'], listed['Elves v2']['cover']), ('arena', 'a', 'Forest'))
         self.assertEqual(listed['Elves v2']['cards'], 9)
-        self.assertEqual({listed['Paper']['id'], listed['Planned here']['id']}, {paper, mine})
+        self.assertEqual(listed['Paper']['id'], paper)
+        self.assertIsNone(decks.get(mine))
+        # A copy made here of an imported deck is an Arena deck too: gone with the next import
+        decks.duplicate(listed['Elves v2']['id'])
+        decks.replace_arena_decks('mtg', [])
+        self.assertEqual([deck['name'] for deck in decks.list_decks('mtg')], ['Paper'])
 
     def test_a_failed_replacement_keeps_arenas_decks_as_they_were(self):
         decks = self.decks()

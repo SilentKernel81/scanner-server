@@ -305,7 +305,9 @@ a phone too; the deck pages are made for a screen with a pointer.
   [mtga-export](https://github.com/SilentKernel81/mtga-export) (a separate program by the
   same author, for Linux with Steam / Proton, that reads the game while it runs), then **Import from
   Arena** with its `mtga_collection.json` (your cards) and `mtga_decks.json` (your Arena
-  decks) - both at once or one at a time. Each import replaces the one before, Arena cards
+  decks) - both at once or one at a time. Each import replaces the one before - with the deck
+  file, every Arena deck, also one made or copied here, is replaced by the file's decks (paper
+  decks stay; copy an Arena deck as Physical to keep it) - Arena cards
   have no price, and the list cannot be changed here: Arena
   is where that collection lives. Decks are **Physical** or **Arena** (the Decks page
   filters by it): an Arena deck counts what you own in Arena and shows what is missing in

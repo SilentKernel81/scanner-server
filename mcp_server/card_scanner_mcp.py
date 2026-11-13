@@ -58,7 +58,9 @@ DECK_WRITES = """
   changed). Before each write, show the user the change and get their yes - propose_deck_changes first
   for a change of some size. A write refused for problems changed nothing: fix the list, or ask the user
   whether to go ahead anyway (allow_problems). Decks that came from an Arena export cannot be changed
-  (the next import replaces them): offer a new deck made from their list instead."""
+  (the next import replaces them): offer a new deck made from their list instead. Every Arena deck - also
+  one made here - is removed by the user's next Arena import with a deck file: say so when making one, and
+  offer a paper deck (kind 'paper') for a list to keep."""
 
 
 def instructions(deck_writes):

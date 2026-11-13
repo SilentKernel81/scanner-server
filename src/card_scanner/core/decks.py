@@ -37,9 +37,10 @@ COVER_MIGRATION = 'deck_cover_1'
 # kind: which collection a deck is of - 'paper' (cards on a shelf: the collection) or 'arena'
 # (MTG Arena: the digital collection, data/arena_inventory.db). It decides what "owned" and
 # "missing" are counted against, and the deck list can be filtered by it.
-# arena_id: for a deck that came in with an Arena export, the id Arena has for it. The next
-# import replaces exactly those decks (replace_arena_decks); a deck made here has none and
-# is nobody's to replace.
+# arena_id: for a deck that came in with an Arena export, the id Arena has for it - what the
+# next import finds the deck's chosen cover again by. That import replaces EVERY Arena deck
+# (replace_arena_decks, since 2026-11-13), also those made here, which have no arena_id; paper
+# decks are never touched.
 KINDS = ('paper', 'arena')
 KIND_MIGRATION = 'deck_kind_1'
 # card_id: the printing shown (image); the card itself is identified by its name. A deck's
@@ -171,11 +172,12 @@ class DeckManager(storage.Transactional):
 
     def replace_arena_decks(self, game, decks):
         """
-        The decks an Arena export brought are replaced by the ones the next export brings -
-        all at once, or not at all: a deck that is gone from Arena goes here, one that
-        changed there changes here, and a deck that is still there keeps its cover (found
-        again by Arena's id for it). Decks made here - also Arena ones - have no arena_id
-        and are not touched.
+        Every Arena deck of the game is replaced by the decks of this export - all at once, or
+        not at all: after an import with a deck file, the Arena decks are exactly the ones in
+        that file. A deck that is gone from Arena goes here, one that changed there changes
+        here, and a deck that is still there keeps its cover (found again by Arena's id for
+        it). Arena decks made or copied here go too (since 2026-11-13: before, they had no
+        arena_id and stayed); paper decks are never touched.
 
         decks: [{'arena_id', 'name', 'format', 'cards': [{'name', 'card_id', 'quantity',
         'board'}]}]. Returns the new decks' ids.
@@ -183,7 +185,9 @@ class DeckManager(storage.Transactional):
         with self._transaction():
             covers = {row['arena_id']: row['cover'] for row in self.conn.execute(
                 "SELECT arena_id, cover FROM decks WHERE game = ? AND arena_id != ''", (game,))}
-            for row in self.conn.execute("SELECT id FROM decks WHERE game = ? AND arena_id != ''", (game,)).fetchall():
+            # kind, not arena_id: an Arena deck made here (arena_id '') goes as well - the file is the
+            # whole list of Arena decks. self.delete takes each deck's cards with it (same transaction)
+            for row in self.conn.execute("SELECT id FROM decks WHERE game = ? AND kind = 'arena'", (game,)).fetchall():
                 self.delete(row['id'])
             made = []
             for deck in decks:
@@ -229,7 +233,7 @@ class DeckManager(storage.Transactional):
                 return None
             kind = kind or deck['kind']
             label = 'copy' if kind == deck['kind'] else 'Arena' if kind == 'arena' else 'Physical'
-            # Made here, so it is not one of Arena's (no arena_id): no import replaces it
+            # Made here, so not one of Arena's (no arena_id) - an Arena copy is still removed by the next import with a deck file
             new_id = self.create(deck['game'], f"{deck['name']} ({label})"[:80], deck['format'], deck['notes'], kind=kind)
             self.import_cards(new_id, deck['cards'])
             if deck['cover']:  # the copy looks like the deck it was made from
