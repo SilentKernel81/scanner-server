@@ -295,7 +295,10 @@ a phone too; the deck pages are made for a screen with a pointer.
   shown as a card, its **cover**: the commander (with two, a button turns to the other), or
   for a deck without one its most valuable card - or any card of the deck you choose with
   its **Cover** button. **Arena** shows the deck as a list for MTG Arena's Import button -
-  only the cards that exist on Arena, and which ones were left out. A deck copied out of
+  only the cards that exist on Arena, and which ones were left out - and copies it to the
+  clipboard as it opens (**Download** there for a file; when the browser refuses the copy,
+  **Copy**). On an Arena deck **Export** does the same, instead of downloading the text list
+  (whose "Adventure // Spell" names Arena refuses). A deck copied out of
   Arena can be pasted into **New deck**. (Tried with a few lines pasted into Arena, which made the deck;
   a whole deck with a commander or a sideboard has not been tried.) The same window says
   whether you could **build the deck in Arena**: how many of its cards your Arena

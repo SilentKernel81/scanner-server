@@ -846,6 +846,10 @@ async function openArena() {
     $('arena-copy').disabled = $('arena-download').disabled = !data.text;
     $('arena-modal').classList.add('show');
     $('arena-text').select();
+    // Straight to the clipboard: Arena's Import reads it from there, so a file is only the
+    // fallback (the Download button). Copied right away, while the click that opened the
+    // window still counts for the browser; if it refuses, the window is open with its Copy
+    if (data.text) await copyArena();
 }
 
 function arenaCheckHtml(check, onArena) {
@@ -1229,7 +1233,12 @@ function bindBuilderEvents() {
     $('deck-name').addEventListener('change', event => saveDeckInfo({name: event.target.value}));
     $('deck-format').addEventListener('change', event => saveDeckInfo({format: event.target.value}));
     $('deck-import').addEventListener('click', () => openDeckModal({importInto: deck}));
-    $('deck-export').addEventListener('click', () => { window.location = `/api/decks/${deck.id}/export/text`; });
+    $('deck-export').addEventListener('click', () => {
+        // An Arena deck is exported for Arena: its list (front names only - Arena refuses
+        // "Adventure // Its spell") goes to the clipboard. A paper deck downloads its text list
+        if (deck.kind === 'arena' && gameInfo.arena) return openArena();
+        window.location = `/api/decks/${deck.id}/export/text`;
+    });
     // Only a game that has a digital client to write for (games/: arena_decklist) shows the button
     $('deck-arena').hidden = !gameInfo.arena;
     $('deck-arena').addEventListener('click', openArena);
